@@ -1,7 +1,3 @@
-#![feature(ptr_internals)]
-#![feature(allocator_api)]
-#![feature(alloc_layout_extra)]
-
 use std::ptr::{Unique, NonNull, self};
 use std::mem;
 use std::ops::{Deref, DerefMut};
@@ -296,9 +292,11 @@ impl<'a, T> Drop for Drain<'a, T> {
     }
 }
 
+#[cfg(test)]
 mod tests {
     use super::*;
 
+    #[test]
     pub fn create_push_pop() {
         let mut v = Vec::new();
         v.push(1);
@@ -317,6 +315,7 @@ mod tests {
         assert_eq!(1, v.len());
     }
 
+    #[test]
     pub fn iter_test() {
         let mut v = Vec::new();
         for i in 0..10 {
@@ -330,6 +329,7 @@ mod tests {
         assert_eq!(9, *last);
     }
 
+    #[test]
     pub fn test_drain() {
         let mut v = Vec::new();
         for i in 0..10 {
@@ -347,6 +347,7 @@ mod tests {
         assert_eq!(1, *v.pop().unwrap());
     }
 
+    #[test]
     pub fn test_zst() {
         let mut v = Vec::new();
         for _i in 0..10 {
