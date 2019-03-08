@@ -75,7 +75,7 @@ pub struct Iter<'a, T: 'a> {
 }
 
 impl<'a, T> List<T> {
-    pub fn iter(&'a self) -> Iter<'a, T> {
+    pub fn iter(&self) -> Iter<T> {
         Iter { next: self.head.as_ref().map(|node| &**node) }
     }
 }
