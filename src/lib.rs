@@ -5,3 +5,4 @@
 pub mod vec;
 pub mod list;
 pub mod deque;
+pub mod bintree;
