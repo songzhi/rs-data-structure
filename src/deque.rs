@@ -47,4 +47,23 @@ impl<T> Deque<T> {
             }
         }
     }
+    pub fn pop_front(&mut self) -> Option<T> {
+        // need to take the old head, ensuring it's -2
+        self.head.take().map(|old_head| {
+            match old_head.borrow_mut().next.take() {
+                Some(new_head) => {
+                    // not emptying list
+                    new_head.borrow_mut().prev.take();
+                    self.head = Some(new_head);
+                    // total: -2 old, +0 new
+                }
+                None => {
+                    // emptying list
+                    self.tail.take(); // -1 old
+                    // total: -2 old
+                }
+            }
+            Rc::try_unwrap(old_head).ok().unwrap().into_inner().elem
+        })
+    }
 }
