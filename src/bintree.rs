@@ -6,6 +6,23 @@ struct Node<T> {
     right: Link<T>,
 }
 
+pub struct BinTree<T> {
+    tree: Link<T>
+}
+
+impl<T> BinTree<T> {
+    fn new() -> Self {
+        Self {
+            tree: None
+        }
+    }
+    fn traverse_pre<F: Fn(&T)>(&self, visit: F) {
+        if let Some(ref tree) = self.tree {
+            tree.traverse_pre(visit);
+        }
+    }
+}
+
 impl<T> Node<T> {
     fn new(elem: T) -> Self {
         Self {
