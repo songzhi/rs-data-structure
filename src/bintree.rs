@@ -4,10 +4,10 @@ use std::collections::vec_deque::VecDeque;
 type Link<T> = Option<Box<Node<T>>>;
 
 #[derive(Debug)]
-struct Node<T> {
-    elem: T,
-    left: Link<T>,
-    right: Link<T>,
+pub struct Node<T> {
+    pub elem: T,
+    pub left: Link<T>,
+    pub right: Link<T>,
 }
 
 #[derive(Debug)]
@@ -71,21 +71,21 @@ impl<T: PartialEq> BinTree<T> {
 }
 
 impl<T> Node<T> {
-    fn new(elem: T) -> Self {
+    pub fn new(elem: T) -> Self {
         Self {
             elem,
             left: None,
             right: None,
         }
     }
-    fn with_children(elem: T, left: Link<T>, right: Link<T>) -> Self {
+    pub fn with_children(elem: T, left: Link<T>, right: Link<T>) -> Self {
         Self {
             elem,
             left,
             right,
         }
     }
-    fn traverse_pre(&self, visit: &mut impl FnMut(&T)) {
+    pub fn traverse_pre(&self, visit: &mut impl FnMut(&T)) {
         visit(&self.elem);
         if let Some(ref node) = self.left {
             node.traverse_pre(visit);
@@ -94,7 +94,7 @@ impl<T> Node<T> {
             node.traverse_pre(visit);
         }
     }
-    fn traverse_in(&self, visit: &mut impl FnMut(&T)) {
+    pub fn traverse_in(&self, visit: &mut impl FnMut(&T)) {
         if let Some(ref node) = self.left {
             node.traverse_in(visit);
         }
@@ -103,7 +103,7 @@ impl<T> Node<T> {
             node.traverse_in(visit);
         }
     }
-    fn traverse_post(&self, visit: &mut impl FnMut(&T)) {
+    pub fn traverse_post(&self, visit: &mut impl FnMut(&T)) {
         if let Some(ref node) = self.left {
             node.traverse_post(visit);
         }
@@ -112,7 +112,7 @@ impl<T> Node<T> {
         }
         visit(&self.elem);
     }
-    fn traverse_level(&self, visit: &mut impl FnMut(&T)) {
+    pub fn traverse_level(&self, visit: &mut impl FnMut(&T)) {
         let mut que = VecDeque::new();
         que.push_back(self);
         while let Some(node) = que.pop_front() {
@@ -125,7 +125,7 @@ impl<T> Node<T> {
             }
         }
     }
-    fn from_post_expr(tokens: impl Iterator<Item=T>, is_operator: impl Fn(&T) -> bool) -> Link<T> {
+    pub fn from_post_expr(tokens: impl Iterator<Item=T>, is_operator: impl Fn(&T) -> bool) -> Link<T> {
         let mut stack = vec![];
         for symbol in tokens {
             if is_operator(&symbol) {
@@ -140,7 +140,7 @@ impl<T> Node<T> {
         }
         stack.pop()
     }
-    fn depth(&self) -> usize {
+    pub fn depth(&self) -> usize {
         let l_depth = self.left.as_ref().map(|node| node.depth()).unwrap_or(0);
         let r_depth = self.right.as_ref().map(|node| node.depth()).unwrap_or(0);
         max(l_depth, r_depth) + 1
@@ -148,7 +148,7 @@ impl<T> Node<T> {
 }
 
 impl<T: PartialEq> Node<T> {
-    fn from_seq_pre(seq_itr: &mut impl Iterator<Item=T>, null_val: &T) -> Link<T> {
+    pub fn from_seq_pre(seq_itr: &mut impl Iterator<Item=T>, null_val: &T) -> Link<T> {
         let elem = seq_itr.next()?;
         if elem == *null_val {
             return None;
@@ -159,7 +159,7 @@ impl<T: PartialEq> Node<T> {
             Some(tree)
         }
     }
-    fn from_seq_in(seq_itr: &mut impl Iterator<Item=T>, null_val: &T) -> Link<T> {
+    pub fn from_seq_in(seq_itr: &mut impl Iterator<Item=T>, null_val: &T) -> Link<T> {
         let elem = seq_itr.next()?;
         if elem == *null_val {
             return None;
@@ -171,7 +171,7 @@ impl<T: PartialEq> Node<T> {
             Some(tree)
         }
     }
-    fn from_seq_post(seq_itr: &mut impl Iterator<Item=T>, null_val: &T) -> Link<T> {
+    pub fn from_seq_post(seq_itr: &mut impl Iterator<Item=T>, null_val: &T) -> Link<T> {
         let elem = seq_itr.next()?;
         if elem == *null_val {
             return None;
