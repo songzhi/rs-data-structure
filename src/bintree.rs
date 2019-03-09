@@ -19,9 +19,9 @@ impl<T> BinTree<T> {
         }
     }
 
-    pub fn traverse_pre(&self, visit: impl Fn(&T)) {
+    pub fn traverse_pre(&self, mut visit: impl FnMut(&T)) {
         if let Some(ref tree) = self.root {
-            tree.traverse_pre(&visit);
+            tree.traverse_pre(&mut visit);
         }
     }
 }
@@ -44,7 +44,7 @@ impl<T> Node<T> {
         }
     }
 
-    fn traverse_pre(&self, visit: &impl Fn(&T)) {
+    fn traverse_pre(&self, visit: &mut impl FnMut(&T)) {
         visit(&self.elem);
         if let Some(ref node) = self.left {
             node.traverse_pre(visit);
@@ -84,6 +84,8 @@ mod test {
     fn from_seq_pre() {
         let seq = "ABC##DE#G##F###";
         let tree = BinTree::from_seq_pre(seq.chars().into_iter(), &'#');
-        tree.traverse_pre(|ch| print!("{}", *ch));
+        let mut seq = String::new();
+        tree.traverse_pre(|ch| seq.push(*ch));
+        assert_eq!(seq, "ABCDEGF");
     }
 }
