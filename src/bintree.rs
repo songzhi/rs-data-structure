@@ -1,4 +1,5 @@
 use std::cmp::max;
+use std::collections::vec_deque::VecDeque;
 
 type Link<T> = Option<Box<Node<T>>>;
 
@@ -34,6 +35,11 @@ impl<T> BinTree<T> {
     pub fn traverse_post(&self, mut visit: impl FnMut(&T)) {
         if let Some(ref tree) = self.root {
             tree.traverse_post(&mut visit);
+        }
+    }
+    pub fn traverse_level(&self, mut visit: impl FnMut(&T)) {
+        if let Some(ref tree) = self.root {
+            tree.traverse_level(&mut visit);
         }
     }
     pub fn from_post_expr(tokens: impl Iterator<Item=T>, is_operator: impl Fn(&T) -> bool) -> Self {
@@ -105,6 +111,19 @@ impl<T> Node<T> {
             node.traverse_post(visit);
         }
         visit(&self.elem);
+    }
+    fn traverse_level(&self, visit: &mut impl FnMut(&T)) {
+        let mut que = VecDeque::new();
+        que.push_back(self);
+        while let Some(node) = que.pop_front() {
+            visit(&node.elem);
+            if let Some(ref left) = node.left {
+                que.push_back(&*left);
+            }
+            if let Some(ref right) = node.right {
+                que.push_back(&*right);
+            }
+        }
     }
     fn from_post_expr(tokens: impl Iterator<Item=T>, is_operator: impl Fn(&T) -> bool) -> Link<T> {
         let mut stack = vec![];
@@ -203,5 +222,14 @@ mod test {
         let seq = "ABC##DE#G##F###";
         let tree = BinTree::from_seq_pre(seq.chars().into_iter(), &'#');
         assert_eq!(5, tree.depth());
+    }
+
+    #[test]
+    fn traverse_level() {
+        let seq = "ABC##DE#G##F###";
+        let tree = BinTree::from_seq_pre(seq.chars().into_iter(), &'#');
+        let mut seq = String::new();
+        tree.traverse_level(|ch| seq.push(*ch));
+        assert_eq!(seq, "ABCDEFG");
     }
 }
