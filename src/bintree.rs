@@ -1,24 +1,36 @@
 type Link<T> = Option<Box<Node<T>>>;
 
+#[derive(Debug)]
 struct Node<T> {
-    elem: T,
-    left: Link<T>,
-    right: Link<T>,
+    pub elem: T,
+    pub left: Link<T>,
+    pub right: Link<T>,
 }
 
+#[derive(Debug)]
 pub struct BinTree<T> {
-    tree: Link<T>
+    root: Link<T>
 }
 
 impl<T> BinTree<T> {
-    fn new() -> Self {
+    pub fn new() -> Self {
         Self {
-            tree: None
+            root: None
         }
     }
-    fn traverse_pre<F: Fn(&T)>(&self, visit: F) {
-        if let Some(ref tree) = self.tree {
-            tree.traverse_pre(visit);
+
+    pub fn traverse_pre(&self, visit: impl Fn(&T)) {
+        if let Some(ref tree) = self.root {
+            tree.traverse_pre(&visit);
+        }
+    }
+}
+
+impl<T: PartialEq> BinTree<T> {
+    pub fn from_seq_pre(mut seq_itr: impl Iterator<Item=T>, null_val: &T) -> Self {
+        let tree = Node::from_seq_pre(&mut seq_itr, null_val);
+        Self {
+            root: tree
         }
     }
 }
@@ -31,13 +43,28 @@ impl<T> Node<T> {
             right: None,
         }
     }
-    fn traverse_pre<F: Fn(&T)>(&self, visit: F) {
+
+    fn traverse_pre(&self, visit: &impl Fn(&T)) {
         visit(&self.elem);
         if let Some(ref node) = self.left {
-            node.traverse_pre(&visit);
+            node.traverse_pre(visit);
         }
         if let Some(ref node) = self.right {
-            node.traverse_pre(&visit);
+            node.traverse_pre(visit);
+        }
+    }
+}
+
+impl<T: PartialEq> Node<T> {
+    fn from_seq_pre(seq_itr: &mut impl Iterator<Item=T>, null_val: &T) -> Link<T> {
+        let elem = seq_itr.next()?;
+        if elem == *null_val {
+            return None;
+        } else {
+            let mut tree = Box::new(Node::new(elem));
+            tree.left = Self::from_seq_pre(seq_itr, null_val);
+            tree.right = Self::from_seq_pre(seq_itr, null_val);
+            Some(tree)
         }
     }
 }
@@ -46,5 +73,17 @@ impl<T> Drop for Node<T> {
     fn drop(&mut self) {
         self.left.take();
         self.right.take();
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::BinTree;
+
+    #[test]
+    fn from_seq_pre() {
+        let seq = "ABC##DE#G##F###";
+        let tree = BinTree::from_seq_pre(seq.chars().into_iter(), &'#');
+        tree.traverse_pre(|ch| print!("{}", *ch));
     }
 }
