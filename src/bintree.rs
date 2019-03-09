@@ -1,3 +1,5 @@
+use std::sync::atomic::Ordering::SeqCst;
+
 type Link<T> = Option<Box<Node<T>>>;
 
 #[derive(Debug)]
@@ -34,25 +36,27 @@ impl<T> BinTree<T> {
             tree.traverse_post(&mut visit);
         }
     }
+    pub fn from_post_expr(tokens: impl Iterator<Item=T>, is_operator: impl Fn(&T) -> bool) -> Self {
+        Self {
+            root: Node::from_post_expr(tokens, is_operator)
+        }
+    }
 }
 
 impl<T: PartialEq> BinTree<T> {
     pub fn from_seq_pre(mut seq_itr: impl Iterator<Item=T>, null_val: &T) -> Self {
-        let tree = Node::from_seq_pre(&mut seq_itr, null_val);
         Self {
-            root: tree
+            root: Node::from_seq_pre(&mut seq_itr, null_val)
         }
     }
     pub fn from_seq_in(mut seq_itr: impl Iterator<Item=T>, null_val: &T) -> Self {
-        let tree = Node::from_seq_in(&mut seq_itr, null_val);
         Self {
-            root: tree
+            root: Node::from_seq_in(&mut seq_itr, null_val)
         }
     }
     pub fn from_seq_post(mut seq_itr: impl Iterator<Item=T>, null_val: &T) -> Self {
-        let tree = Node::from_seq_post(&mut seq_itr, null_val);
         Self {
-            root: tree
+            root: Node::from_seq_post(&mut seq_itr, null_val)
         }
     }
 }
@@ -65,7 +69,13 @@ impl<T> Node<T> {
             right: None,
         }
     }
-
+    fn with_children(elem: T, left: Link<T>, right: Link<T>) -> Self {
+        Self {
+            elem,
+            left,
+            right,
+        }
+    }
     fn traverse_pre(&self, visit: &mut impl FnMut(&T)) {
         visit(&self.elem);
         if let Some(ref node) = self.left {
@@ -92,6 +102,21 @@ impl<T> Node<T> {
             node.traverse_post(visit);
         }
         visit(&self.elem);
+    }
+    fn from_post_expr(tokens: impl Iterator<Item=T>, is_operator: impl Fn(&T) -> bool) -> Link<T> {
+        let mut stack = vec![];
+        for symbol in tokens {
+            if is_operator(&symbol) {
+                let right = stack.pop();
+                let left = stack.pop();
+                let new_tree = Box::new(Node::with_children(symbol, left, right));
+                stack.push(new_tree);
+            } else {
+                let new_tree = Box::new(Node::new(symbol));
+                stack.push(new_tree);
+            }
+        }
+        stack.pop()
     }
 }
 
@@ -152,5 +177,16 @@ mod test {
         let mut seq = String::new();
         tree.traverse_pre(|ch| seq.push(*ch));
         assert_eq!(seq, "ABCDEGF");
+    }
+
+    #[test]
+    fn from_post_expr() {
+        let tokens = "ab+cde+**";
+        let is_operator = |token: &char| "+-*/".contains(*token);
+        let tree = BinTree::from_post_expr(tokens.chars().into_iter(), is_operator);
+
+        let mut seq = String::new();
+        tree.traverse_in(|ch| seq.push(*ch));
+        assert_eq!(seq, "a+b*c*d+e");
     }
 }
