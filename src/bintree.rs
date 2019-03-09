@@ -24,6 +24,16 @@ impl<T> BinTree<T> {
             tree.traverse_pre(&mut visit);
         }
     }
+    pub fn traverse_in(&self, mut visit: impl FnMut(&T)) {
+        if let Some(ref tree) = self.root {
+            tree.traverse_in(&mut visit);
+        }
+    }
+    pub fn traverse_post(&self, mut visit: impl FnMut(&T)) {
+        if let Some(ref tree) = self.root {
+            tree.traverse_post(&mut visit);
+        }
+    }
 }
 
 impl<T: PartialEq> BinTree<T> {
@@ -52,6 +62,24 @@ impl<T> Node<T> {
         if let Some(ref node) = self.right {
             node.traverse_pre(visit);
         }
+    }
+    fn traverse_in(&self, visit: &mut impl FnMut(&T)) {
+        if let Some(ref node) = self.left {
+            node.traverse_in(visit);
+        }
+        visit(&self.elem);
+        if let Some(ref node) = self.right {
+            node.traverse_in(visit);
+        }
+    }
+    fn traverse_post(&self, visit: &mut impl FnMut(&T)) {
+        if let Some(ref node) = self.left {
+            node.traverse_post(visit);
+        }
+        if let Some(ref node) = self.right {
+            node.traverse_post(visit);
+        }
+        visit(&self.elem);
     }
 }
 
