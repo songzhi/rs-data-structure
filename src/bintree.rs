@@ -1,7 +1,7 @@
 use std::cmp::max;
 use std::collections::vec_deque::VecDeque;
 
-type Link<T> = Option<Box<Node<T>>>;
+pub type Link<T> = Option<Box<Node<T>>>;
 
 #[derive(Debug)]
 pub struct Node<T> {
