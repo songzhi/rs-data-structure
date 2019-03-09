@@ -2,9 +2,9 @@ type Link<T> = Option<Box<Node<T>>>;
 
 #[derive(Debug)]
 struct Node<T> {
-    pub elem: T,
-    pub left: Link<T>,
-    pub right: Link<T>,
+    elem: T,
+    left: Link<T>,
+    right: Link<T>,
 }
 
 #[derive(Debug)]
@@ -39,6 +39,18 @@ impl<T> BinTree<T> {
 impl<T: PartialEq> BinTree<T> {
     pub fn from_seq_pre(mut seq_itr: impl Iterator<Item=T>, null_val: &T) -> Self {
         let tree = Node::from_seq_pre(&mut seq_itr, null_val);
+        Self {
+            root: tree
+        }
+    }
+    pub fn from_seq_in(mut seq_itr: impl Iterator<Item=T>, null_val: &T) -> Self {
+        let tree = Node::from_seq_in(&mut seq_itr, null_val);
+        Self {
+            root: tree
+        }
+    }
+    pub fn from_seq_post(mut seq_itr: impl Iterator<Item=T>, null_val: &T) -> Self {
+        let tree = Node::from_seq_post(&mut seq_itr, null_val);
         Self {
             root: tree
         }
@@ -92,6 +104,31 @@ impl<T: PartialEq> Node<T> {
             let mut tree = Box::new(Node::new(elem));
             tree.left = Self::from_seq_pre(seq_itr, null_val);
             tree.right = Self::from_seq_pre(seq_itr, null_val);
+            Some(tree)
+        }
+    }
+    fn from_seq_in(seq_itr: &mut impl Iterator<Item=T>, null_val: &T) -> Link<T> {
+        let elem = seq_itr.next()?;
+        if elem == *null_val {
+            return None;
+        } else {
+            let left = Self::from_seq_pre(seq_itr, null_val);
+            let mut tree = Box::new(Node::new(elem));
+            tree.left = left;
+            tree.right = Self::from_seq_pre(seq_itr, null_val);
+            Some(tree)
+        }
+    }
+    fn from_seq_post(seq_itr: &mut impl Iterator<Item=T>, null_val: &T) -> Link<T> {
+        let elem = seq_itr.next()?;
+        if elem == *null_val {
+            return None;
+        } else {
+            let left = Self::from_seq_pre(seq_itr, null_val);
+            let right = Self::from_seq_pre(seq_itr, null_val);
+            let mut tree = Box::new(Node::new(elem));
+            tree.left = left;
+            tree.right = right;
             Some(tree)
         }
     }
