@@ -1,4 +1,4 @@
-use std::sync::atomic::Ordering::SeqCst;
+use std::cmp::max;
 
 type Link<T> = Option<Box<Node<T>>>;
 
@@ -40,6 +40,9 @@ impl<T> BinTree<T> {
         Self {
             root: Node::from_post_expr(tokens, is_operator)
         }
+    }
+    pub fn depth(&self) -> usize {
+        self.root.as_ref().map(|root| root.depth()).unwrap_or(0)
     }
 }
 
@@ -118,6 +121,11 @@ impl<T> Node<T> {
         }
         stack.pop()
     }
+    fn depth(&self) -> usize {
+        let l_depth = self.left.as_ref().map(|node| node.depth()).unwrap_or(0);
+        let r_depth = self.right.as_ref().map(|node| node.depth()).unwrap_or(0);
+        max(l_depth, r_depth) + 1
+    }
 }
 
 impl<T: PartialEq> Node<T> {
@@ -188,5 +196,12 @@ mod test {
         let mut seq = String::new();
         tree.traverse_in(|ch| seq.push(*ch));
         assert_eq!(seq, "a+b*c*d+e");
+    }
+
+    #[test]
+    fn depth() {
+        let seq = "ABC##DE#G##F###";
+        let tree = BinTree::from_seq_pre(seq.chars().into_iter(), &'#');
+        assert_eq!(5, tree.depth());
     }
 }
