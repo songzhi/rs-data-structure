@@ -102,5 +102,32 @@ mod test {
         assert_eq!(2, tree.root.as_ref().unwrap().right.as_ref().unwrap().elem);
     }
 
+    #[test]
+    fn find() {
+        let mut tree = BinSearchTree::new();
+        tree.insert(1);
+        tree.insert(2);
+        assert_eq!(true, tree.find(1).is_some());
+        assert_eq!(false, tree.find(3).is_some());
+    }
 
+    #[test]
+    fn find_min() {
+        let mut tree = BinSearchTree::new();
+        tree.insert(5);
+        tree.insert(2);
+        tree.insert(3);
+        tree.insert(9);
+        assert_eq!(2, tree.find_min().unwrap().elem);
+    }
+
+    #[test]
+    fn find_max() {
+        let mut tree = BinSearchTree::new();
+        tree.insert(5);
+        tree.insert(2);
+        tree.insert(3);
+        tree.insert(9);
+        assert_eq!(9, tree.find_max().unwrap().elem);
+    }
 }
