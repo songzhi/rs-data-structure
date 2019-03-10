@@ -1,16 +1,19 @@
 use std::cmp::max;
 use std::collections::vec_deque::VecDeque;
+use std::fmt;
+use std::fmt::Display;
+use crate::utils::width_in_fmt;
 
 pub type Link<T> = Option<Box<Node<T>>>;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Node<T> {
     pub elem: T,
     pub left: Link<T>,
     pub right: Link<T>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct BinTree<T> {
     root: Link<T>
 }
@@ -66,6 +69,16 @@ impl<T: PartialEq> BinTree<T> {
     pub fn from_seq_post(mut seq_itr: impl Iterator<Item=T>, null_val: &T) -> Self {
         Self {
             root: Node::from_seq_post(&mut seq_itr, null_val)
+        }
+    }
+}
+
+impl<T: Display> Display for BinTree<T> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        if let Some(ref node) = self.root {
+            node.fmt(f)
+        } else {
+            writeln!(f, "Empty Binary Tree")
         }
     }
 }
@@ -190,6 +203,82 @@ impl<T> Drop for Node<T> {
     fn drop(&mut self) {
         self.left.take();
         self.right.take();
+    }
+}
+
+impl<T: Display> Display for Node<T> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        fn fill_map<'a, T>(map: &mut Vec<Option<&'a Node<T>>>, node: &'a Node<T>, index: usize) {
+            map[index] = Some(node);
+            if let Some(ref left) = node.left {
+                fill_map(map, &*left, index * 2 + 1);
+            }
+            if let Some(ref right) = node.right {
+                fill_map(map, &*right, (index + 1) * 2);
+            }
+        }
+
+        fn print_left_to_parent_branch_top(f: &mut fmt::Formatter, w: usize) -> fmt::Result {
+            write!(f, "{:w1$}{:_^w2$}/ ", " ", "_", w1 = w + 1, w2 = w - 3)
+        }
+        fn print_right_to_parent_branch_top(f: &mut fmt::Formatter, w: usize) -> fmt::Result {
+            write!(f, "\\{:_^w1$}{:w2$}", "_", " ", w1 = w - 3, w2 = w + 2)
+        }
+        fn print_left_to_parent_branch_bottom(f: &mut fmt::Formatter, w: usize) -> fmt::Result {
+            write!(f, "{:w1$}/{:w2$}", " ", " ", w1 = w, w2 = w - 1)
+        }
+        fn print_right_to_parent_branch_bottom(f: &mut fmt::Formatter, w: usize) -> fmt::Result {
+            write!(f, "{:w1$}\\{:w2$}", " ", " ", w1 = w - 2, w2 = w + 1)
+        }
+
+        let depth = self.depth();
+        let mut map = vec![None; 2usize.pow(depth as u32) - 1];
+        fill_map(&mut map, self, 0);
+        let mut index = 0usize;
+        for j in 0..depth {
+            let w = 2usize.pow((depth - j + 1) as u32);
+            if j > 0 {
+                // Top part of node to parent branch
+                for i in 0..2usize.pow(j as u32) {
+                    if map[index + i].is_some() {
+                        if i % 2 == 0 {
+                            print_left_to_parent_branch_top(f, w)?;
+                        } else {
+                            print_right_to_parent_branch_top(f, w)?;
+                        }
+                    } else {
+                        write!(f, "{:w$}", "", w = w * 2)?;
+                    }
+                }
+                writeln!(f)?;
+                // Bottom part of node to parent branch
+                for i in 0..2usize.pow(j as u32) {
+                    if map[index + i].is_some() {
+                        if i % 2 == 0 {
+                            print_left_to_parent_branch_bottom(f, w)?;
+                        } else {
+                            print_right_to_parent_branch_bottom(f, w)?;
+                        }
+                    } else {
+                        write!(f, "{:w$}", "", w = w * 2)?;
+                    }
+                }
+                writeln!(f)?;
+            }
+            // Node content
+            for _ in 0..2usize.pow(j as u32) {
+                if let Some(node) = map[index] {
+                    let content = format!("({})", node.elem);
+                    write!(f, "{:^width$}", content.as_str(),
+                           width = width_in_fmt(content.as_str(), w * 2))?;
+                } else {
+                    write!(f, "{:w$}", "", w = w * 2)?;
+                }
+                index += 1;
+            }
+            writeln!(f)?;
+        }
+        Ok(())
     }
 }
 
