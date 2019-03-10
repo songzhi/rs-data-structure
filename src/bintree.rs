@@ -161,6 +161,9 @@ impl<T> Node<T> {
         let r_depth = self.right.as_ref().map(|node| node.depth()).unwrap_or(0);
         max(l_depth, r_depth) + 1
     }
+    pub fn has_child(&self) -> bool {
+        self.left.is_some() || self.right.is_some()
+    }
 }
 
 impl<T: PartialEq> Node<T> {
