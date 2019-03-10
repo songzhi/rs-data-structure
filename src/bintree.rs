@@ -199,12 +199,6 @@ impl<T: PartialEq> Node<T> {
     }
 }
 
-impl<T> Drop for Node<T> {
-    fn drop(&mut self) {
-        self.left.take();
-        self.right.take();
-    }
-}
 
 impl<T: Display> Display for Node<T> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
