@@ -21,31 +21,13 @@ impl<T> BinSearchTree<T>
         self.root.is_none()
     }
     pub fn find(&self, elem: T) -> Option<&Node<T>> {
-        fn _find<T: PartialOrd>(node: Option<&Node<T>>, elem: T) -> Option<&Node<T>> {
-            let node = node?;
-            if elem < node.elem {
-                _find(unbox_link(&node.left), elem)
-            } else if elem > node.elem {
-                _find(unbox_link(&node.right), elem)
-            } else {
-                Some(node)
-            }
-        }
-        _find(unbox_link(&self.root), elem)
+        unbox_link(&self.root)?.find(elem)
     }
     pub fn find_min(&self) -> Option<&Node<T>> {
-        let mut node = unbox_link(&self.root)?;
-        while let Some(left) = unbox_link(&node.left) {
-            node = left;
-        }
-        Some(node)
+        Some(self.root.as_ref()?.find_min())
     }
     pub fn find_max(&self) -> Option<&Node<T>> {
-        let mut node = unbox_link(&self.root)?;
-        while let Some(right) = unbox_link(&node.right) {
-            node = right;
-        }
-        Some(node)
+        Some(self.root.as_ref()?.find_max())
     }
     pub fn insert(&mut self, elem: T) {
         fn _insert<T: PartialOrd>(node: &mut Link<T>, elem: T) {
@@ -71,6 +53,33 @@ impl<T> Display for BinSearchTree<T>
         } else {
             writeln!(f, "Empty Binary Search Tree")
         }
+    }
+}
+
+impl<T> Node<T>
+    where T: PartialEq + PartialOrd {
+    pub fn find(&self, elem: T) -> Option<&Node<T>> {
+        if elem < self.elem {
+            unbox_link(&self.left)?.find(elem)
+        } else if elem > self.elem {
+            unbox_link(&self.right)?.find(elem)
+        } else {
+            Some(self)
+        }
+    }
+    pub fn find_min(&self) -> &Node<T> {
+        let mut node = self;
+        while let Some(left) = unbox_link(&node.left) {
+            node = left;
+        }
+        node
+    }
+    pub fn find_max(&self) -> &Node<T> {
+        let mut node = self;
+        while let Some(right) = unbox_link(&node.right) {
+            node = right;
+        }
+        node
     }
 }
 
