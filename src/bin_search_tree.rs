@@ -4,7 +4,7 @@ use std::fmt;
 
 pub struct BinSearchTree<T>
     where T: PartialEq + PartialOrd {
-    root: Link<T>
+    pub root: Link<T>
 }
 
 impl<T> BinSearchTree<T>
@@ -47,6 +47,20 @@ impl<T> BinSearchTree<T>
         }
         Some(node)
     }
+    pub fn insert(&mut self, elem: T) {
+        fn _insert<T: PartialOrd>(node: &mut Link<T>, elem: T) {
+            if let Some(node) = node {
+                if elem < node.elem {
+                    _insert(&mut node.left, elem);
+                } else if elem > node.elem {
+                    _insert(&mut node.right, elem);
+                } // Else elem is in the tree already; we'll do nothing
+            } else {
+                *node = Some(Box::new(Node::new(elem)));
+            }
+        }
+        _insert(&mut self.root, elem);
+    }
 }
 
 impl<T> Display for BinSearchTree<T>
@@ -64,6 +78,10 @@ fn unbox_link<T>(link: &Link<T>) -> Option<&Node<T>> {
     link.as_ref().map(|node| &**node)
 }
 
+fn unbox_link_mut<T>(link: &mut Link<T>) -> Option<&mut Node<T>> {
+    link.as_mut().map(|node| &mut **node)
+}
+
 #[cfg(test)]
 mod test {
     use crate::bin_search_tree::BinSearchTree;
@@ -73,4 +91,16 @@ mod test {
         let tree: BinSearchTree<i32> = BinSearchTree::new();
         assert_eq!(true, tree.is_empty());
     }
+
+    #[test]
+    fn insert() {
+        let mut tree = BinSearchTree::new();
+        tree.insert(1);
+        tree.insert(2);
+        assert_eq!(false, tree.is_empty());
+        assert_eq!(1, tree.root.as_ref().unwrap().elem);
+        assert_eq!(2, tree.root.as_ref().unwrap().right.as_ref().unwrap().elem);
+    }
+
+
 }
