@@ -20,6 +20,19 @@ impl<T> BinSearchTree<T>
     pub fn is_empty(&self) -> bool {
         self.root.is_none()
     }
+    pub fn find(&self, elem: T) -> Option<&Node<T>> {
+        fn _find<T: PartialOrd>(node: Option<&Node<T>>, elem: T) -> Option<&Node<T>> {
+            let node = node?;
+            if elem < node.elem {
+                _find(node.left.as_ref().map(|n| &**n), elem)
+            } else if elem > node.elem {
+                _find(node.right.as_ref().map(|n| &**n), elem)
+            } else {
+                Some(node)
+            }
+        }
+        _find(self.root.as_ref().map(|n| &**n), elem)
+    }
 }
 
 impl<T> Display for BinSearchTree<T>
