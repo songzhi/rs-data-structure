@@ -53,6 +53,9 @@ impl<T> BinTree<T> {
     pub fn depth(&self) -> usize {
         self.root.as_ref().map(|root| root.depth()).unwrap_or(0)
     }
+    pub fn is_empty(&self) -> bool {
+        self.root.is_none()
+    }
 }
 
 impl<T: PartialEq> BinTree<T> {

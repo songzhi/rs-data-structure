@@ -14,6 +14,12 @@ impl<T> BinSearchTree<T>
             root: None
         }
     }
+    pub fn clear(&mut self) {
+        self.root.take();
+    }
+    pub fn is_empty(&self) -> bool {
+        self.root.is_none()
+    }
 }
 
 impl<T> Display for BinSearchTree<T>
@@ -24,5 +30,16 @@ impl<T> Display for BinSearchTree<T>
         } else {
             writeln!(f, "Empty Binary Search Tree")
         }
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use crate::bin_search_tree::BinSearchTree;
+
+    #[test]
+    fn basics() {
+        let tree: BinSearchTree<i32> = BinSearchTree::new();
+        assert_eq!(true, tree.is_empty());
     }
 }
