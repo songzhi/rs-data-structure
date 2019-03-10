@@ -30,18 +30,11 @@ impl<T> BinSearchTree<T>
         Some(self.root.as_ref()?.find_max())
     }
     pub fn insert(&mut self, elem: T) {
-        fn _insert<T: PartialOrd>(node: &mut Link<T>, elem: T) {
-            if let Some(node) = node {
-                if elem < node.elem {
-                    _insert(&mut node.left, elem);
-                } else if elem > node.elem {
-                    _insert(&mut node.right, elem);
-                } // Else elem is in the tree already; we'll do nothing
-            } else {
-                *node = Some(Box::new(Node::new(elem)));
-            }
+        if let Some(root) = self.root.as_mut() {
+            root.insert(elem);
+        } else {
+            self.root = Some(Box::new(Node::new(elem)));
         }
-        _insert(&mut self.root, elem);
     }
 }
 
@@ -80,6 +73,21 @@ impl<T> Node<T>
             node = right;
         }
         node
+    }
+    pub fn insert(&mut self, elem: T) {
+        if elem < self.elem {
+            if let Some(left) = self.left.as_mut() {
+                left.insert(elem);
+            } else {
+                self.left = Some(Box::new(Node::new(elem)));
+            }
+        } else if elem > self.elem {
+            if let Some(right) = self.right.as_mut() {
+                right.insert(elem);
+            } else {
+                self.right = Some(Box::new(Node::new(elem)));
+            }
+        } // Else elem is in the tree already; we'll do nothing
     }
 }
 
