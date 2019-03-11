@@ -26,24 +26,16 @@ impl<T> BinTree<T> {
     }
 
     pub fn traverse_pre(&self, mut visit: impl FnMut(&T)) {
-        if let Some(ref tree) = self.root {
-            tree.traverse_pre(&mut visit);
-        }
+        self.root.as_ref().map(|n| n.traverse_pre(&mut visit));
     }
     pub fn traverse_in(&self, mut visit: impl FnMut(&T)) {
-        if let Some(ref tree) = self.root {
-            tree.traverse_in(&mut visit);
-        }
+        self.root.as_ref().map(|n| n.traverse_in(&mut visit));
     }
     pub fn traverse_post(&self, mut visit: impl FnMut(&T)) {
-        if let Some(ref tree) = self.root {
-            tree.traverse_post(&mut visit);
-        }
+        self.root.as_ref().map(|n| n.traverse_post(&mut visit));
     }
     pub fn traverse_level(&self, mut visit: impl FnMut(&T)) {
-        if let Some(ref tree) = self.root {
-            tree.traverse_level(&mut visit);
-        }
+        self.root.as_ref().map(|n| n.traverse_level(&mut visit));
     }
     pub fn from_post_expr(tokens: impl Iterator<Item=T>, is_operator: impl Fn(&T) -> bool) -> Self {
         Self {
@@ -103,29 +95,17 @@ impl<T> Node<T> {
     }
     pub fn traverse_pre(&self, visit: &mut impl FnMut(&T)) {
         visit(&self.elem);
-        if let Some(ref node) = self.left {
-            node.traverse_pre(visit);
-        }
-        if let Some(ref node) = self.right {
-            node.traverse_pre(visit);
-        }
+        self.left.as_ref().map(|n| n.traverse_pre(visit));
+        self.right.as_ref().map(|n| n.traverse_pre(visit));
     }
     pub fn traverse_in(&self, visit: &mut impl FnMut(&T)) {
-        if let Some(ref node) = self.left {
-            node.traverse_in(visit);
-        }
+        self.left.as_ref().map(|n| n.traverse_in(visit));
         visit(&self.elem);
-        if let Some(ref node) = self.right {
-            node.traverse_in(visit);
-        }
+        self.right.as_ref().map(|n| n.traverse_in(visit));
     }
     pub fn traverse_post(&self, visit: &mut impl FnMut(&T)) {
-        if let Some(ref node) = self.left {
-            node.traverse_post(visit);
-        }
-        if let Some(ref node) = self.right {
-            node.traverse_post(visit);
-        }
+        self.left.as_ref().map(|n| n.traverse_post(visit));
+        self.right.as_ref().map(|n| n.traverse_post(visit));
         visit(&self.elem);
     }
     pub fn traverse_level(&self, visit: &mut impl FnMut(&T)) {
@@ -133,12 +113,8 @@ impl<T> Node<T> {
         que.push_back(self);
         while let Some(node) = que.pop_front() {
             visit(&node.elem);
-            if let Some(ref left) = node.left {
-                que.push_back(&*left);
-            }
-            if let Some(ref right) = node.right {
-                que.push_back(&*right);
-            }
+            node.left.as_ref().map(|n| que.push_back(&*n));
+            node.right.as_ref().map(|n| que.push_back(&*n));
         }
     }
     pub fn from_post_expr(tokens: impl Iterator<Item=T>, is_operator: impl Fn(&T) -> bool) -> Link<T> {
