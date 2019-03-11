@@ -3,12 +3,12 @@ use std::fmt::Display;
 use std::fmt;
 
 pub struct BinSearchTree<T>
-    where T: PartialEq + PartialOrd {
+    where T: Ord {
     pub root: Link<T>
 }
 
 impl<T> BinSearchTree<T>
-    where T: PartialEq + PartialOrd {
+    where T: Ord {
     pub fn new() -> Self {
         Self {
             root: None
@@ -44,7 +44,7 @@ impl<T> BinSearchTree<T>
 }
 
 impl<T> Display for BinSearchTree<T>
-    where T: Display + PartialEq + PartialOrd {
+    where T: Display + Ord {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         if let Some(ref node) = self.root {
             node.fmt(f)
@@ -55,7 +55,7 @@ impl<T> Display for BinSearchTree<T>
 }
 
 pub trait BinarySearchTreeNode<T>
-    where T: PartialEq + PartialOrd, Self: std::marker::Sized {
+    where T: Ord, Self: std::marker::Sized {
     fn find(&self, elem: T) -> Option<&Self>;
     fn find_min(&self) -> &Self;
     fn find_max(&self) -> &Self;
@@ -64,7 +64,7 @@ pub trait BinarySearchTreeNode<T>
 }
 
 impl<T> BinarySearchTreeNode<T> for Node<T>
-    where T: PartialEq + PartialOrd {
+    where T: Ord {
     fn find(&self, elem: T) -> Option<&Node<T>> {
         if elem < self.elem {
             unbox_link(&self.left)?.find(elem)
