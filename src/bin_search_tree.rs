@@ -54,9 +54,18 @@ impl<T> Display for BinSearchTree<T>
     }
 }
 
-impl<T> Node<T>
+pub trait BinarySearchTreeNode<T>
+    where T: PartialEq + PartialOrd, Self: std::marker::Sized {
+    fn find(&self, elem: T) -> Option<&Self>;
+    fn find_min(&self) -> &Self;
+    fn find_max(&self) -> &Self;
+    fn insert(&mut self, elem: T);
+    fn delete(self, elem: T) -> Option<Self>;
+}
+
+impl<T> BinarySearchTreeNode<T> for Node<T>
     where T: PartialEq + PartialOrd {
-    pub fn find(&self, elem: T) -> Option<&Node<T>> {
+    fn find(&self, elem: T) -> Option<&Node<T>> {
         if elem < self.elem {
             unbox_link(&self.left)?.find(elem)
         } else if elem > self.elem {
@@ -65,21 +74,21 @@ impl<T> Node<T>
             Some(self)
         }
     }
-    pub fn find_min(&self) -> &Node<T> {
+    fn find_min(&self) -> &Node<T> {
         let mut node = self;
         while let Some(left) = unbox_link(&node.left) {
             node = left;
         }
         node
     }
-    pub fn find_max(&self) -> &Node<T> {
+    fn find_max(&self) -> &Node<T> {
         let mut node = self;
         while let Some(right) = unbox_link(&node.right) {
             node = right;
         }
         node
     }
-    pub fn insert(&mut self, elem: T) {
+    fn insert(&mut self, elem: T) {
         if elem < self.elem {
             if let Some(left) = self.left.as_mut() {
                 left.insert(elem);
@@ -95,7 +104,7 @@ impl<T> Node<T>
         } // Else elem is in the tree already; we'll do nothing
     }
 
-    pub fn delete(mut self, elem: T) -> Option<Self> {
+    fn delete(mut self, elem: T) -> Option<Self> {
         if elem < self.elem {
             self.left = self.left.and_then(|n| n.delete(elem))
                 .and_then(|n| Some(Box::new(n)));
