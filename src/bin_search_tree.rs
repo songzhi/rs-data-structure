@@ -36,6 +36,11 @@ impl<T> BinSearchTree<T>
             self.root = Some(Box::new(Node::new(elem)));
         }
     }
+    pub fn delete(&mut self, elem: T) {
+        let root = self.root.take();
+        self.root = root.and_then(|n| n.delete(elem))
+            .and_then(|n| Some(Box::new(n)));
+    }
 }
 
 impl<T> Display for BinSearchTree<T>
@@ -88,6 +93,53 @@ impl<T> Node<T>
                 self.right = Some(Box::new(Node::new(elem)));
             }
         } // Else elem is in the tree already; we'll do nothing
+    }
+
+    pub fn delete(mut self, elem: T) -> Option<Self> {
+        if elem < self.elem {
+            self.left = self.left.and_then(|n| n.delete(elem))
+                .and_then(|n| Some(Box::new(n)));
+        } else if elem > self.elem {
+            self.right = self.right.and_then(|n| n.delete(elem))
+                .and_then(|n| Some(Box::new(n)));
+        } // Found element to be deleted
+        else if self.left.is_some() && self.right.is_some() {
+            // Two children
+            let mut min_node_parent = unbox_link_mut(&mut self.right).unwrap(); // checked before
+            loop {
+                if let Some(left) = unbox_link(&min_node_parent.left) {
+                    if !left.has_child() {
+                        break;
+                    }
+                } else {
+                    // this only happens in first time if the self.right doesn't have the left subtree
+                    break;
+                }
+                min_node_parent = unbox_link_mut(&mut min_node_parent.left).unwrap(); // will never panic
+            }
+            let min_node = min_node_parent.left.take(); // take the min_node
+            if let Some(mut node) = min_node {
+                // exists and might has right subtree
+                min_node_parent.left = node.right.take(); // replace itself by its right subtree
+                self.elem = node.elem;
+            } else {
+                // the min_node_parent has not left subtree,so it's actually the min_node
+                let min_node_parent = self.right.take().unwrap();
+                self.elem = min_node_parent.elem;
+                self.right = min_node_parent.right;
+            }
+        } else {
+            // One or zero child
+            let mut res: Option<Node<T>> = None;
+            if self.left.is_none() {
+                res = self.right.take().map(|n| *n);
+            }
+            if self.right.is_none() {
+                res = self.left.take().map(|n| *n);
+            }
+            return res;
+        }
+        Some(self)
     }
 }
 
@@ -146,5 +198,24 @@ mod test {
         tree.insert(3);
         tree.insert(9);
         assert_eq!(9, tree.find_max().unwrap().elem);
+    }
+
+    #[test]
+    fn delete() {
+        let mut tree = BinSearchTree::new();
+        tree.insert(5);
+        tree.insert(2);
+        tree.insert(3);
+        tree.insert(9);
+
+        assert_eq!(true, tree.find(2).is_some());
+        tree.delete(2);
+        assert_eq!(true, tree.find(2).is_none());
+
+        tree.delete(3);
+        tree.delete(5);
+        tree.delete(9);
+
+        assert_eq!(true, tree.is_empty());
     }
 }
