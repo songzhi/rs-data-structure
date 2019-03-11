@@ -73,7 +73,7 @@ fn shift_tail<T, F>(v: &mut [T], is_less: &mut F)
                 hole.dest = v.get_unchecked_mut(i);
             }
             // `hole` gets dropped and thus copies `tmp` into the remaining hole in `v`.
-        } else {}
+        }
     }
 }
 
@@ -87,7 +87,7 @@ pub fn insertion_sort<T, F>(v: &mut [T], is_less: &mut F)
 pub fn shell_sort<T, F>(v: &mut [T], is_less: &mut F)
     where F: FnMut(&T, &T) -> bool {
     let v_len = v.len();
-    let mut increment = (v_len + 1) / 2 - 1;
+    let mut increment = v_len / 2;
     unsafe {
         while increment > 0 {
             for i in increment..v_len {
@@ -101,25 +101,33 @@ pub fn shell_sort<T, F>(v: &mut [T], is_less: &mut F)
                     if is_less(&*tmp, &v[j - increment]) {
                         ptr::copy_nonoverlapping(v.get_unchecked(j - increment), v.get_unchecked_mut(j), 1);
                     } else {
+                        // hole.dest = v.get_unchecked_mut(j);
                         break;
                     }
                     j -= increment;
                     hole.dest = v.get_unchecked_mut(j);
                 }
             }
-            increment = (increment + 1) / 2 - 1;
+            increment = (increment - 1) / 3;
         }
     }
 }
 
 #[cfg(test)]
 mod test {
-    use crate::algo::sort::shell_sort;
+    use crate::algo::sort::{shell_sort, insertion_sort};
 
     #[test]
     fn test_shell_sort() {
-        let mut v = [81, 94, 11, 96, 12, 35, 17, 95, 28, 58, 41, 75, 15];
+        let mut v = vec![81, 94, 11, 96, 12, 35, 17, 95, 28, 58, 41, 75, 15];
         shell_sort(&mut v, &mut |a, b| a.lt(b));
         assert_eq!(vec![11, 12, 15, 17, 28, 35, 41, 58, 75, 81, 94, 95, 96], v);
+    }
+
+    #[test]
+    fn test_insertion_sort() {
+        let mut v = [81, 94, 11, 96, 12, 35, 17, 95, 28, 58, 41, 75, 15];
+        insertion_sort(&mut v, &mut |a, b| a.lt(b));
+        assert_eq!([11, 12, 15, 17, 28, 35, 41, 58, 75, 81, 94, 95, 96], v);
     }
 }
