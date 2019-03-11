@@ -84,3 +84,42 @@ pub fn insertion_sort<T, F>(v: &mut [T], is_less: &mut F)
     }
 }
 
+pub fn shell_sort<T, F>(v: &mut [T], is_less: &mut F)
+    where F: FnMut(&T, &T) -> bool {
+    let v_len = v.len();
+    let mut increment = v_len / 2;
+    unsafe {
+        while increment > 0 {
+            for i in increment..v_len {
+                let mut tmp = mem::ManuallyDrop::new(ptr::read(v.get_unchecked(i)));
+                let mut j = i;
+                let mut hole = CopyOnDrop {
+                    src: &mut *tmp,
+                    dest: v.get_unchecked_mut(j),
+                };
+                while j >= increment {
+                    if is_less(&*tmp, &v[j - increment]) {
+                        ptr::copy_nonoverlapping(v.get_unchecked(j - increment), v.get_unchecked_mut(j), 1);
+                    } else {
+                        break;
+                    }
+                    j -= increment;
+                    hole.dest = v.get_unchecked_mut(j);
+                }
+            }
+            increment /= 2;
+        }
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use crate::algo::sort::shell_sort;
+
+    #[test]
+    fn test_shell_sort() {
+        let mut v = [81, 94, 11, 96, 12, 35, 17, 95, 28, 58, 41, 75, 15];
+        shell_sort(&mut v, &mut |a, b| a.lt(b));
+        assert_eq!(vec![11, 12, 15, 17, 28, 35, 41, 58, 75, 81, 94, 95, 96], v);
+    }
+}
