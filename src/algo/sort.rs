@@ -87,7 +87,7 @@ pub fn insertion_sort<T, F>(v: &mut [T], is_less: &mut F)
 pub fn shell_sort<T, F>(v: &mut [T], is_less: &mut F)
     where F: FnMut(&T, &T) -> bool {
     let v_len = v.len();
-    let mut increment = v_len / 2;
+    let mut increment = (v_len + 1) / 2 - 1;
     unsafe {
         while increment > 0 {
             for i in increment..v_len {
@@ -107,7 +107,7 @@ pub fn shell_sort<T, F>(v: &mut [T], is_less: &mut F)
                     hole.dest = v.get_unchecked_mut(j);
                 }
             }
-            increment /= 2;
+            increment = (increment + 1) / 2 - 1;
         }
     }
 }
