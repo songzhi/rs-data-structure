@@ -10,3 +10,4 @@ pub mod bintree;
 pub mod algo;
 pub mod utils;
 pub mod bin_search_tree;
+pub mod hashmap;
