@@ -1,7 +1,7 @@
-use std::cmp::max;
+use core::cmp::max;
 use std::collections::vec_deque::VecDeque;
-use std::fmt;
-use std::fmt::Display;
+use core::fmt;
+use core::fmt::Display;
 use crate::utils::width_in_fmt;
 
 pub type Link<T> = Option<Box<Node<T>>>;
