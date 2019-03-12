@@ -294,6 +294,22 @@ pub fn quick_sort<T, F>(v: &mut [T], is_less: &mut F)
     }
 }
 
+pub fn selection_sort<T, F>(v: &mut [T], is_less: &mut F)
+    where F: FnMut(&T, &T) -> bool {
+    let v_len = v.len();
+    for i in 0..v_len - 1 {
+        unsafe {
+            let mut min = i;
+            for j in i + 1..v_len {
+                if is_less(v.get_unchecked(j), v.get_unchecked(min)) {
+                    min = j;
+                }
+            }
+            ptr::swap(v.get_unchecked_mut(i), v.get_unchecked_mut(min));
+        }
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -330,6 +346,13 @@ mod test {
     fn test_quick_sort() {
         let mut v = [81, 94, 11, 96, 12, 35, 17, 95, 28, 58, 41, 75, 15];
         quick_sort(&mut v, &mut |a, b| a.lt(b));
+        assert_eq!([11, 12, 15, 17, 28, 35, 41, 58, 75, 81, 94, 95, 96], v);
+    }
+
+    #[test]
+    fn test_selection_sort() {
+        let mut v = [81, 94, 11, 96, 12, 35, 17, 95, 28, 58, 41, 75, 15];
+        selection_sort(&mut v, &mut |a, b| a.lt(b));
         assert_eq!([11, 12, 15, 17, 28, 35, 41, 58, 75, 81, 94, 95, 96], v);
     }
 }
