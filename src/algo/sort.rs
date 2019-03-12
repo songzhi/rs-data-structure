@@ -153,6 +153,56 @@ pub fn heapsort<T, F>(v: &mut [T], is_less: &mut F)
     }
 }
 
+pub fn merge_sort<T, F>(v: &mut [T], is_less: &mut F)
+    where F: FnMut(&T, &T) -> bool {
+    let v_len = v.len();
+    let mut tmp = Vec::with_capacity(v_len);
+    sort(v, &mut tmp, 0, v_len - 1, is_less);
+
+    fn sort<T, F>(v: &mut [T], tmp: &mut [T], left: usize, right: usize, is_less: &mut F)
+        where F: FnMut(&T, &T) -> bool {
+        if left < right {
+            let center = (left + right) / 2;
+            sort(v, tmp, left, center, is_less);
+            sort(v, tmp, center + 1, right, is_less);
+            merge(v, tmp, left, center + 1, right, is_less);
+        }
+    }
+
+    fn merge<T, F>(v: &mut [T], tmp: &mut [T], left: usize, right: usize, right_end: usize, is_less: &mut F)
+        where F: FnMut(&T, &T) -> bool {
+        let mut left = left;
+        let mut right = right;
+        let left_end = right - 1;
+        let mut tmp_pos = left;
+        let num_elems = right_end - left + 1;
+
+        unsafe {
+            while left <= left_end && right <= right_end {
+                if is_less(&v[left], &v[right]) {
+                    ptr::copy_nonoverlapping(v.get_unchecked(left), tmp.get_unchecked_mut(tmp_pos), 1);
+                    left += 1;
+                } else {
+                    ptr::copy_nonoverlapping(v.get_unchecked(right), tmp.get_unchecked_mut(tmp_pos), 1);
+                    right += 1;
+                }
+                tmp_pos += 1;
+            }
+            if left <= left_end {
+                let left_half_rest = left_end - left + 1;
+                ptr::copy_nonoverlapping(v.get_unchecked(left), tmp.get_unchecked_mut(tmp_pos), left_half_rest);
+                tmp_pos += left_half_rest;
+            }
+            if right <= right_end {
+                let right_half_rest = right_end - right + 1;
+                ptr::copy_nonoverlapping(v.get_unchecked(right), tmp.get_unchecked_mut(tmp_pos), right_half_rest);
+            }
+            let old_left = right_end + 1 - num_elems;
+            ptr::copy_nonoverlapping(tmp.get_unchecked(old_left), v.get_unchecked_mut(old_left), num_elems);
+        }
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -175,6 +225,13 @@ mod test {
     fn test_heap_sort() {
         let mut v = [81, 94, 11, 96, 12, 35, 17, 95, 28, 58, 41, 75, 15];
         heapsort(&mut v, &mut |a, b| a.lt(b));
+        assert_eq!([11, 12, 15, 17, 28, 35, 41, 58, 75, 81, 94, 95, 96], v);
+    }
+
+    #[test]
+    fn test_merge_sort() {
+        let mut v = [81, 94, 11, 96, 12, 35, 17, 95, 28, 58, 41, 75, 15];
+        merge_sort(&mut v, &mut |a, b| a.lt(b));
         assert_eq!([11, 12, 15, 17, 28, 35, 41, 58, 75, 81, 94, 95, 96], v);
     }
 }
