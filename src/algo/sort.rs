@@ -1,5 +1,6 @@
 use core::{mem, ptr};
 
+
 /// When dropped, copies from `src` into `dest`.
 struct CopyOnDrop<T> {
     src: *mut T,
@@ -203,6 +204,96 @@ pub fn merge_sort<T, F>(v: &mut [T], is_less: &mut F)
     }
 }
 
+pub fn quick_sort<T, F>(v: &mut [T], is_less: &mut F)
+    where F: FnMut(&T, &T) -> bool {
+    sort(v, 0, v.len() - 1, is_less);
+
+    fn sort<T, F>(v: &mut [T], left: usize, right: usize, is_less: &mut F)
+        where F: FnMut(&T, &T) -> bool {
+        const CUTOFF: usize = 3;
+        if left + CUTOFF <= right {
+            return insertion_sort(v.split_at_mut(left).1, is_less);
+        }
+        let (pivot, _) = choose_pivot(v, is_less);
+        let mut i = left;
+        let mut j = right - 1;
+        unsafe {
+            loop {
+                while is_less(v.get_unchecked(i + 1), v.get_unchecked(pivot)) { i += 1; }
+                while !is_less(v.get_unchecked(j - 1), v.get_unchecked(pivot)) { j -= 1; }
+                if i < j {
+                    ptr::swap(v.get_unchecked_mut(i), v.get_unchecked_mut(j));
+                } else {
+                    break;
+                }
+            }
+            ptr::swap(v.get_unchecked_mut(i), v.get_unchecked_mut(right - 1));
+            sort(v, left, i - 1, is_less);
+            sort(v, i + 1, right, is_less);
+        }
+    }
+    fn choose_pivot<T, F>(v: &mut [T], is_less: &mut F) -> (usize, bool)
+        where F: FnMut(&T, &T) -> bool {
+        // Minimum length to choose the median-of-medians method.
+        // Shorter slices use the simple median-of-three method.
+        const SHORTEST_MEDIAN_OF_MEDIANS: usize = 50;
+        // Maximum number of swaps that can be performed in this function.
+        const MAX_SWAPS: usize = 4 * 3;
+
+        let len = v.len();
+
+        // Three indices near which we are going to choose a pivot.
+        let mut a = len / 4 * 1;
+        let mut b = len / 4 * 2;
+        let mut c = len / 4 * 3;
+
+        // Counts the total number of swaps we are about to perform while sorting indices.
+        let mut swaps = 0;
+
+        if len >= 8 {
+            // Swaps indices so that `v[a] <= v[b]`.
+            let mut sort2 = |a: &mut usize, b: &mut usize| unsafe {
+                if is_less(v.get_unchecked(*b), v.get_unchecked(*a)) {
+                    ptr::swap(a, b);
+                    swaps += 1;
+                }
+            };
+
+            // Swaps indices so that `v[a] <= v[b] <= v[c]`.
+            let mut sort3 = |a: &mut usize, b: &mut usize, c: &mut usize| {
+                sort2(a, b);
+                sort2(b, c);
+                sort2(a, b);
+            };
+
+            if len >= SHORTEST_MEDIAN_OF_MEDIANS {
+                // Finds the median of `v[a - 1], v[a], v[a + 1]` and stores the index into `a`.
+                let mut sort_adjacent = |a: &mut usize| {
+                    let tmp = *a;
+                    sort3(&mut (tmp - 1), a, &mut (tmp + 1));
+                };
+
+                // Find medians in the neighborhoods of `a`, `b`, and `c`.
+                sort_adjacent(&mut a);
+                sort_adjacent(&mut b);
+                sort_adjacent(&mut c);
+            }
+
+            // Find the median among `a`, `b`, and `c`.
+            sort3(&mut a, &mut b, &mut c);
+        }
+
+        if swaps < MAX_SWAPS {
+            (b, swaps == 0)
+        } else {
+            // The maximum number of swaps was performed. Chances are the slice is descending or mostly
+            // descending, so reversing will probably help sort it faster.
+            v.reverse();
+            (len - 1 - b, true)
+        }
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -232,6 +323,13 @@ mod test {
     fn test_merge_sort() {
         let mut v = [81, 94, 11, 96, 12, 35, 17, 95, 28, 58, 41, 75, 15];
         merge_sort(&mut v, &mut |a, b| a.lt(b));
+        assert_eq!([11, 12, 15, 17, 28, 35, 41, 58, 75, 81, 94, 95, 96], v);
+    }
+
+    #[test]
+    fn test_quick_sort() {
+        let mut v = [81, 94, 11, 96, 12, 35, 17, 95, 28, 58, 41, 75, 15];
+        quick_sort(&mut v, &mut |a, b| a.lt(b));
         assert_eq!([11, 12, 15, 17, 28, 35, 41, 58, 75, 81, 94, 95, 96], v);
     }
 }
