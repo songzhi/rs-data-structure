@@ -113,9 +113,49 @@ pub fn shell_sort<T, F>(v: &mut [T], is_less: &mut F)
     }
 }
 
+pub fn heapsort<T, F>(v: &mut [T], is_less: &mut F)
+    where F: FnMut(&T, &T) -> bool
+{
+    // This binary heap respects the invariant `parent >= child`.
+    let mut sift_down = |v: &mut [T], mut node| {
+        loop {
+            // Children of `node`:
+            let left = 2 * node + 1;
+            let right = 2 * node + 2;
+
+            // Choose the greater child.
+            let greater = if right < v.len() && is_less(&v[left], &v[right]) {
+                right
+            } else {
+                left
+            };
+
+            // Stop if the invariant holds at `node`.
+            if greater >= v.len() || !is_less(&v[node], &v[greater]) {
+                break;
+            }
+
+            // Swap `node` with the greater child, move one step down, and continue sifting.
+            v.swap(node, greater);
+            node = greater;
+        }
+    };
+
+    // Build the heap in linear time.
+    for i in (0..v.len() / 2).rev() {
+        sift_down(v, i);
+    }
+
+    // Pop maximal elements from the heap.
+    for i in (1..v.len()).rev() {
+        v.swap(0, i);
+        sift_down(&mut v[..i], 0);
+    }
+}
+
 #[cfg(test)]
 mod test {
-    use crate::algo::sort::{shell_sort, insertion_sort};
+    use super::*;
 
     #[test]
     fn test_shell_sort() {
@@ -128,6 +168,13 @@ mod test {
     fn test_insertion_sort() {
         let mut v = [81, 94, 11, 96, 12, 35, 17, 95, 28, 58, 41, 75, 15];
         insertion_sort(&mut v, &mut |a, b| a.lt(b));
+        assert_eq!([11, 12, 15, 17, 28, 35, 41, 58, 75, 81, 94, 95, 96], v);
+    }
+
+    #[test]
+    fn test_heap_sort() {
+        let mut v = [81, 94, 11, 96, 12, 35, 17, 95, 28, 58, 41, 75, 15];
+        heapsort(&mut v, &mut |a, b| a.lt(b));
         assert_eq!([11, 12, 15, 17, 28, 35, 41, 58, 75, 81, 94, 95, 96], v);
     }
 }
