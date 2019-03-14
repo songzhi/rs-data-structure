@@ -6,9 +6,9 @@
 pub mod vec;
 pub mod list;
 pub mod deque;
-pub mod bintree;
 pub mod algo;
 pub mod utils;
-pub mod bin_search_tree;
 pub mod hashmap;
 pub mod heap;
+pub mod graph;
+pub mod tree;

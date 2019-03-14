@@ -1,4 +1,4 @@
-use crate::bintree::{Node, Link};
+use super::bintree::{Node, Link};
 use std::fmt::Display;
 use std::fmt;
 
@@ -162,7 +162,7 @@ fn unbox_link_mut<T>(link: &mut Link<T>) -> Option<&mut Node<T>> {
 
 #[cfg(test)]
 mod test {
-    use crate::bin_search_tree::BinSearchTree;
+    use super::BinSearchTree;
 
     #[test]
     fn basics() {
