@@ -1,3 +1,4 @@
 pub mod graph;
 pub mod edge;
-pub mod vertex;
+pub mod node;
+pub mod traverse;
