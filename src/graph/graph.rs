@@ -132,6 +132,16 @@ impl<N, E, Ty> Graph<N, E, Ty>
         n
     }
 
+    /// Remove node 'n' and its edges from the graph
+    pub fn remove_node(&mut self, n: N) -> Option<N> {
+        let adj_nodes = self.nodes.remove(&n)?;
+        for (adj_v, direction) in adj_nodes {
+            self.nodes.get_mut(&adj_v)?.remove_item(&(adj_v, direction.opposite()));
+            self.edges.remove(&Self::edge_key(n, adj_v));
+        }
+        Some(n)
+    }
+
     /// Return `true` if the node is contained in the graph.
     pub fn contains_node(&self, n: N) -> bool {
         self.nodes.contains_key(&n)
@@ -742,5 +752,18 @@ mod tests {
         // Test with none-existing node.
         let mut neighbors_4 = graph.neighbors_directed(4, Incoming);
         assert_eq!(neighbors_4.next(), None);
+    }
+
+    #[test]
+    fn remove_node() {
+        let mut graph: Graph<u32, f32> = Graph::with_capacity(3, 3);
+        graph.add_edge(1, 2, 3.0);
+        graph.add_edge(2, 3, 5.0);
+        graph.add_edge(1, 3, 4.0);
+
+        graph.remove_node(1);
+        assert_eq!(false, graph.contains_node(1));
+        assert_eq!(false, graph.contains_edge(1, 2));
+        assert_eq!(false, graph.contains_edge(1, 3));
     }
 }

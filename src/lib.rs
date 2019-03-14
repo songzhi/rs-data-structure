@@ -2,6 +2,7 @@
 #![feature(allocator_api)]
 #![feature(alloc_layout_extra)]
 #![feature(fmt_internals)]
+#![feature(vec_remove_item)]
 
 pub mod vec;
 pub mod list;
