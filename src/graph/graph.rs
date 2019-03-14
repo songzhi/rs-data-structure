@@ -137,7 +137,10 @@ impl<N, E, Ty> Graph<N, E, Ty>
         let adj_nodes = self.nodes.remove(&n)?;
         for (adj_v, direction) in adj_nodes {
             self.nodes.get_mut(&adj_v)?.remove_item(&(adj_v, direction.opposite()));
-            self.edges.remove(&Self::edge_key(n, adj_v));
+            match direction {
+                Direction::Outgoing => self.edges.remove(&Self::edge_key(n, adj_v)),
+                Direction::Incoming => self.edges.remove(&Self::edge_key(adj_v, n))
+            };
         }
         Some(n)
     }
@@ -760,10 +763,12 @@ mod tests {
         graph.add_edge(1, 2, 3.0);
         graph.add_edge(2, 3, 5.0);
         graph.add_edge(1, 3, 4.0);
+        graph.add_edge(3, 1, 4.0);
 
         graph.remove_node(1);
         assert_eq!(false, graph.contains_node(1));
         assert_eq!(false, graph.contains_edge(1, 2));
         assert_eq!(false, graph.contains_edge(1, 3));
+        assert_eq!(false, graph.contains_edge(3, 1));
     }
 }
