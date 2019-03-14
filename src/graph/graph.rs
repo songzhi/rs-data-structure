@@ -12,6 +12,7 @@ use std::hash::Hash;
 use std::fmt;
 use std::fmt::Debug;
 use std::collections::vec_deque::VecDeque;
+use std::fmt::rt::v1::Count::Param;
 
 /// Marker type for a directed graph.
 #[derive(Copy, Debug, Clone)]
@@ -243,6 +244,14 @@ impl<N, E, Ty> Graph<N, E, Ty>
         NeighborsDirected::new(iter, dir, self.ty)
     }
 
+    pub fn incoming_degree(&self, a: N) -> usize {
+        self.neighbors_directed(a, Direction::Incoming).count()
+    }
+
+    pub fn outgoing_degree(&self, a: N) -> usize {
+        self.neighbors_directed(a, Direction::Outgoing).count()
+    }
+
     /// Return an iterator of target nodes with an edge starting from `a`,
     /// paired with their respective edge weights.
     ///
@@ -282,7 +291,7 @@ impl<N, E> Graph<N, E, Directed>
         let mut res = Vec::with_capacity(self.node_count());
         let mut nodes_with_indegree: IndexMap<N, usize> = self.nodes.iter()
             .map(|(n, adjs)|
-                (*n, self.neighbors_directed(*n, Direction::Incoming).count()))
+                (*n, self.incoming_degree(*n)))
             .collect();
         let mut que: VecDeque<N> = nodes_with_indegree.iter()
             .filter(|n| *n.1 == 0)
