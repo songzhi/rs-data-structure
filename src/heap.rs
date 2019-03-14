@@ -1,14 +1,20 @@
-use std::mem::{ManuallyDrop, swap};
+use std::mem::{swap, ManuallyDrop};
 use std::ptr;
 
 pub struct Heap<T> {
-    data: Vec<T>
+    data: Vec<T>,
 }
 
 impl<T: Ord> Heap<T> {
-    pub fn new() -> Self { Self { data: vec![] } }
+    pub fn new() -> Self {
+        Self { data: vec![] }
+    }
 
-    pub fn with_capacity(capacity: usize) -> Self { Self { data: Vec::with_capacity(capacity) } }
+    pub fn with_capacity(capacity: usize) -> Self {
+        Self {
+            data: Vec::with_capacity(capacity),
+        }
+    }
 
     pub fn push(&mut self, item: T) {
         let old_len = self.len();
@@ -118,9 +124,13 @@ impl<T: Ord> Heap<T> {
         self.into_vec()
     }
 
-    pub fn len(&self) -> usize { self.data.len() }
+    pub fn len(&self) -> usize {
+        self.data.len()
+    }
 
-    pub fn capacity(&self) -> usize { self.data.capacity() }
+    pub fn capacity(&self) -> usize {
+        self.data.capacity()
+    }
 
     pub fn reserve_exact(&mut self, additional: usize) {
         self.data.reserve_exact(additional);
