@@ -11,6 +11,7 @@ use crate::graph::edge::{Edges, AllEdges};
 use std::hash::Hash;
 use std::fmt;
 use std::fmt::Debug;
+use std::collections::vec_deque::VecDeque;
 
 /// Marker type for a directed graph.
 #[derive(Copy, Debug, Clone)]
@@ -271,6 +272,38 @@ impl<N, E, Ty> Graph<N, E, Ty>
     /// Iterator element type is `(N, N, &E)`
     pub fn all_edges(&self) -> AllEdges<N, E, Ty> {
         AllEdges::new(self.edges.iter(), self.ty)
+    }
+}
+
+impl<N, E> Graph<N, E, Directed>
+    where N: NodeTrait
+{
+    pub fn topological_sort(&mut self) -> Option<Vec<N>> {
+        let mut res = Vec::with_capacity(self.node_count());
+        let mut nodes_with_indegree: IndexMap<N, usize> = self.nodes.iter()
+            .map(|(n, adjs)|
+                (*n, self.neighbors_directed(*n, Direction::Incoming).count()))
+            .collect();
+        let mut que: VecDeque<N> = nodes_with_indegree.iter()
+            .filter(|n| *n.1 == 0)
+            .map(|n| *n.0)
+            .collect();
+        while let Some(v) = que.pop_front() {
+            for adj in self.neighbors_directed(v, Direction::Outgoing) {
+                if adj == v {
+                    return None;
+                }
+                let adj_indegree = nodes_with_indegree.get_mut(&adj)?;
+                *adj_indegree -= 1;
+                if *adj_indegree == 0 {
+                    que.push_back(v);
+                }
+            }
+            self.remove_node(v)?;
+            res.push(v);
+        }
+
+        Some(res)
     }
 }
 
