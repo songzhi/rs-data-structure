@@ -250,23 +250,23 @@ impl<N, E, Ty> Graph<N, E, Ty>
     }
 
     pub fn traverse_dfs(&self, visit: &mut impl FnMut(N)) {
-        let mut is_visited = HashSet::new();
+        let mut visited_set = HashSet::new();
         let mut stack = Vec::new();
         for n in self.nodes.keys() {
-            if is_visited.contains(n) {
+            if visited_set.contains(n) {
                 continue;
             }
             let n = *n;
             visit(n);
-            is_visited.insert(n);
+            visited_set.insert(n);
             stack.push(n);
             while let Some(top) = stack.last() {
                 let mut neighbors = self.neighbors(*top);
                 let all_visited = loop {
                     if let Some(adj) = neighbors.next() {
-                        if !is_visited.contains(&adj) {
+                        if !visited_set.contains(&adj) {
                             visit(adj);
-                            is_visited.insert(adj);
+                            visited_set.insert(adj);
                             stack.push(adj);
                             break false;
                         }
@@ -276,6 +276,28 @@ impl<N, E, Ty> Graph<N, E, Ty>
                 };
                 if all_visited {
                     stack.pop();
+                }
+            }
+        }
+    }
+
+    pub fn traverse_bfs(&self, visit: &mut impl FnMut(N)) {
+        let mut visited_set = HashSet::new();
+        let mut queue = VecDeque::new();
+        for n in self.nodes.keys() {
+            if !visited_set.contains(n) {
+                let n = *n;
+                visit(n);
+                visited_set.insert(n);
+                queue.push_back(n);
+                while let Some(u) = queue.pop_front() {
+                    for adj in self.neighbors(u) {
+                        if !visited_set.contains(&adj) {
+                            visit(adj);
+                            visited_set.insert(adj);
+                            queue.push_back(adj);
+                        }
+                    }
                 }
             }
         }
