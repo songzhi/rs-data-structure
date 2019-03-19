@@ -2,7 +2,7 @@ use super::{
     edge::{Direction, EdgeType, IntoWeightedEdge},
     node::NodeTrait,
 };
-use indexmap::IndexMap;
+use indexmap::{IndexMap, IndexSet};
 use std::iter::FromIterator;
 use std::marker::PhantomData;
 use crate::graph::node::Nodes;
@@ -13,6 +13,7 @@ use std::fmt;
 use std::fmt::Debug;
 use std::collections::vec_deque::VecDeque;
 use std::fmt::rt::v1::Count::Param;
+use std::collections::HashSet;
 
 /// Marker type for a directed graph.
 #[derive(Copy, Debug, Clone)]
@@ -43,13 +44,6 @@ impl<N, E, Ty> Graph<N, E, Ty>
         Ty: EdgeType,
 {
     /// Create a new `Graph` instance.
-    ///
-    /// # Examples
-    /// ```
-    /// use safe_graph::Graph;
-    ///
-    /// let graph: Graph<i32, f32> = Graph::new();
-    /// ```
     pub fn new() -> Self {
         Self::default()
     }
@@ -90,20 +84,6 @@ impl<N, E, Ty> Graph<N, E, Ty>
     /// or they are filled with default values.
     ///
     /// Nodes are inserted automatically to match the edges.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use safe_graph::Graph;
-    ///
-    /// // Create a new directed Graph.
-    /// // Use a type hint to have `()` be the edge weight type.
-    /// let gr = Graph::<_, ()>::from_edges(&[
-    ///     (0, 1), (0, 2), (0, 3),
-    ///     (1, 2), (1, 3),
-    ///     (2, 3),
-    /// ]);
-    /// ```
     pub fn from_edges<I>(iterable: I) -> Self
         where
             I: IntoIterator,
@@ -161,20 +141,6 @@ impl<N, E, Ty> Graph<N, E, Ty>
     /// Return `None` if the edge did not previously exist, otherwise,
     /// the associated data is updated and the old value is returned
     /// as `Some(old_weight)`.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// // Create a Graph with directed edges, and add one edge to it
-    /// use safe_graph::Graph;
-    ///
-    /// let mut g: Graph<_, _> = Graph::new();
-    /// g.add_edge("x", "y", -1);
-    /// assert_eq!(g.node_count(), 2);
-    /// assert_eq!(g.edge_count(), 1);
-    /// assert!(g.contains_edge("x", "y"));
-    /// assert!(!g.contains_edge("y", "x"));
-    /// ```
     pub fn add_edge(&mut self, a: N, b: N, weight: E) -> Option<E> {
         if let old @ Some(_) = self.edges.insert(Self::edge_key(a, b), weight) {
             old
@@ -281,6 +247,38 @@ impl<N, E, Ty> Graph<N, E, Ty>
     /// Iterator element type is `(N, N, &E)`
     pub fn all_edges(&self) -> AllEdges<N, E, Ty> {
         AllEdges::new(self.edges.iter(), self.ty)
+    }
+
+    pub fn traverse_dfs(&self, visit: &mut impl FnMut(N)) {
+        let mut is_visited = HashSet::new();
+        let mut stack = Vec::new();
+        for n in self.nodes.keys() {
+            if is_visited.contains(n) {
+                continue;
+            }
+            let n = *n;
+            visit(n);
+            is_visited.insert(n);
+            stack.push(n);
+            while let Some(top) = stack.last() {
+                let mut neighbors = self.neighbors(*top);
+                let all_visited = loop {
+                    if let Some(adj) = neighbors.next() {
+                        if !is_visited.contains(&adj) {
+                            visit(adj);
+                            is_visited.insert(adj);
+                            stack.push(adj);
+                            break false;
+                        }
+                    } else {
+                        break true;
+                    }
+                };
+                if all_visited {
+                    stack.pop();
+                }
+            }
+        }
     }
 }
 

@@ -130,22 +130,6 @@ impl<'a, N, E, Ty> Iterator for AllEdges<'a, N, E, Ty>
     /// The second half of the tuple that is returned is an [`Option`]`<`[`usize`]`>`.
     /// A [`None`] here means that either there is no known upper bound, or the
     /// upper bound is larger than [`usize`].
-    ///
-    /// # Examples
-    ///
-    /// Basic usage:
-    ///
-    /// ```
-    /// use indexmap::IndexMap;
-    /// use safe_graph::edge::AllEdges;
-    /// use safe_graph::graph::Directed;
-    /// use std::marker::PhantomData;
-    ///
-    /// let edges = IndexMap::new();
-    /// let all_edges: AllEdges<u32, f32, Directed> = AllEdges::new(edges.iter(), PhantomData);
-    ///
-    /// assert_eq!(all_edges.size_hint(), (0, Some(0)));
-    /// ```
     fn size_hint(&self) -> (usize, Option<usize>) {
         self.inner.size_hint()
     }
