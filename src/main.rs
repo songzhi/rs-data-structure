@@ -1,7 +1,8 @@
 #![allow(dead_code)]
 
-use rs_data_structure::tree::bintree::BinTree;
-use rs_data_structure::tree::bin_search_tree::BinSearchTree;
+use rs_data_structure::*;
+use tree::bintree::BinTree;
+use tree::bin_search_tree::BinSearchTree;
 
 fn display_bin_tree() {
     let seq = "ABC##DE#G##F###";
