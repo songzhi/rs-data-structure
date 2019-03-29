@@ -187,11 +187,7 @@ impl<Ty> FromStr for Expr<Ty> {
     fn from_str(expr: &str) -> Result<Self, Self::Err> {
         let mut lexer = Lexer::new(expr);
         lexer.lex()?;
-        Ok(Self {
-            tokens: lexer.tokens,
-            val: None,
-            ty: PhantomData,
-        })
+        Ok(Self::new(lexer.tokens))
     }
 }
 
