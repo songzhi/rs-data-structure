@@ -84,6 +84,16 @@ pub enum Paren {
     Close,
 }
 
+impl Paren {
+    /// get the opposite parenthesis
+    pub fn opposite_paren(&self) -> Self {
+        match self {
+            Paren::Open => Paren::Close,
+            Paren::Close => Paren::Open
+        }
+    }
+}
+
 impl Display for Paren {
     fn fmt(&self, f: &mut Formatter) -> Result {
         write!(
