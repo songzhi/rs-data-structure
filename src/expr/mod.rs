@@ -182,6 +182,72 @@ impl From<Expr<Infix>> for Expr<Postfix> {
     }
 }
 
+impl From<Expr<Infix>> for Expr<Prefix> {
+    fn from(infix_expr: Expr<Infix>) -> Self {
+        let mut prefix_tokens: Vec<Token> = vec![];
+        let mut stack: Vec<Token> = vec![];
+        for token in infix_expr.tokens.into_iter().rev() {
+            match token.data {
+                TokenData::Operator(op) => {
+                    match op {
+                        Operator::Add | Operator::Sub => {
+                            let mut iter = stack.into_iter();
+                            stack = vec![];
+                            prefix_tokens.extend(iter.by_ref().rev().take_while(
+                                |tk| {
+                                    let could_take = tk.data != TokenData::Paren(Paren::Close);
+                                    if !could_take {
+                                        stack.push(*tk);
+                                    }
+                                    could_take
+                                }
+                            ));
+                            stack.extend(iter);
+                            stack.push(token);
+                        }
+                        Operator::Mul | Operator::Div => {
+                            let lower_levels = [
+                                TokenData::Operator(Operator::Add),
+                                TokenData::Operator(Operator::Sub),
+                                TokenData::Paren(Paren::Close)
+                            ];
+                            let mut iter = stack.into_iter();
+                            stack = vec![];
+                            prefix_tokens.extend(iter.by_ref().rev().take_while(
+                                |tk| {
+                                    let could_take = !lower_levels.contains(&tk.data);
+                                    if !could_take {
+                                        stack.push(*tk);
+                                    }
+                                    could_take
+                                }
+                            ));
+                            stack.extend(iter);
+                            stack.push(token);
+                        }
+                    }
+                }
+                TokenData::Number(_) => prefix_tokens.push(token),
+                TokenData::Paren(paren) => {
+                    match paren {
+                        Paren::Close => stack.push(token),
+                        Paren::Open => {
+                            let mut iter = stack.into_iter();
+                            prefix_tokens.extend(iter.by_ref().rev().take_while(
+                                |tk| tk.data != TokenData::Paren(Paren::Close)
+                            ));
+                            stack = iter.collect();
+                        }
+                    }
+                }
+            }
+        }
+        prefix_tokens.extend(stack.iter());
+        prefix_tokens.reverse();
+        Self::new(prefix_tokens)
+    }
+}
+
 impl<Ty> FromStr for Expr<Ty> {
     type Err = LexerError;
     fn from_str(expr: &str) -> Result<Self, Self::Err> {
@@ -217,5 +283,12 @@ mod test {
         let infix_expr: Expr<Infix> = Expr::from_str("1+2*(5-3)").unwrap();
         let postfix_expr: Expr<Postfix> = infix_expr.into();
         assert_eq!(Some(5.0), postfix_expr.eval());
+    }
+
+    #[test]
+    fn test_infix_expr_to_prefix() {
+        let infix_expr: Expr<Infix> = Expr::from_str("1+2*(5-3)").unwrap();
+        let prefix_expr: Expr<Prefix> = infix_expr.into();
+        assert_eq!("+1*2-53", format!("{}", prefix_expr));
     }
 }
