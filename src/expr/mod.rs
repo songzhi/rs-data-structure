@@ -1,16 +1,102 @@
+use crate::expr::token::{Token, TokenData};
+use std::{fmt, error};
+use std::marker::PhantomData;
+use crate::expr::token::Operator;
+use crate::expr::lexer::{Lexer, LexerError};
+use std::str::FromStr;
+use crate::expr::token::TokenData::Paren;
+
 pub mod lexer;
 pub mod token;
 
-pub trait Expr {
-    fn eval(&self) -> Option<i64>;
-    fn from_str() -> Self;
+/// An error that occurred during lexing or compiling of the source input.
+#[derive(Debug, Clone)]
+pub struct ExprError {
+    details: String,
 }
 
-pub struct PrefixExpr(String);
+impl ExprError {
+    fn new(msg: &str) -> ExprError {
+        ExprError {
+            details: msg.to_string(),
+        }
+    }
+}
 
-pub struct InfixExpr(String);
+impl fmt::Display for ExprError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.details)
+    }
+}
 
-pub struct PostfixExpr(String);
+impl error::Error for ExprError {
+    fn description(&self) -> &str {
+        &self.details
+    }
+
+    fn cause(&self) -> Option<&error::Error> {
+        // Generic error, underlying cause isn't tracked.
+        None
+    }
+}
+
+#[derive(Copy, Debug, Clone)]
+pub enum Prefix {}
+
+#[derive(Copy, Debug, Clone)]
+pub enum Infix {}
+
+#[derive(Copy, Debug, Clone)]
+pub enum Postfix {}
+
+pub trait ExprType {
+    fn is_prefix() -> bool { false }
+    fn is_infix() -> bool { false }
+    fn is_postfix() -> bool { false }
+}
+
+impl ExprType for Prefix {
+    fn is_prefix() -> bool { true }
+}
+
+impl ExprType for Infix {
+    fn is_infix() -> bool { true }
+}
+
+impl ExprType for Postfix {
+    fn is_postfix() -> bool { true }
+}
+
+pub struct Expr<Ty = Infix> {
+    tokens: Vec<Token>,
+    val: Option<f64>,
+    ty: PhantomData<Ty>,
+}
+
+impl<Ty> Expr<Ty> {
+    pub fn new(tokens: Vec<Token>) -> Self {
+        Self {
+            tokens,
+            val: None,
+            ty: PhantomData,
+        }
+    }
+}
+
+
+impl<Ty> FromStr for Expr<Ty> {
+    type Err = LexerError;
+    fn from_str(expr: &str) -> Result<Self, Self::Err> {
+        let mut lexer = Lexer::new(expr);
+        lexer.lex()?;
+        Ok(Self {
+            tokens: lexer.tokens,
+            val: None,
+            ty: PhantomData,
+        })
+    }
+}
+
 
 
 pub fn infix_expr_to_post(tokens: impl Iterator<Item=char>) -> String {
