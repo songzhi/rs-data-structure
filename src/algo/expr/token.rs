@@ -1,0 +1,75 @@
+use std::fmt::{Display, Error, Formatter, Result, Debug};
+
+/// Represents a token
+#[derive(Debug, Clone, PartialEq)]
+pub struct Token {
+    data: TokenData,
+    pos: usize,
+}
+
+impl Token {
+    pub fn new(data: TokenData, pos: usize) -> Self {
+        Self {
+            data,
+            pos,
+        }
+    }
+}
+
+impl Display for Token {
+    fn fmt(&self, f: &mut Formatter) -> Result { write!(f, "{}", self.data) }
+}
+
+pub struct VecToken(Vec<Token>);
+
+impl Debug for VecToken {
+    fn fmt(&self, f: &mut Formatter) -> Result {
+        let mut buffer = String::new();
+        for token in &self.0 {
+            buffer.push_str(&token.to_string());
+        }
+        write!(f, "{}", buffer)
+    }
+}
+
+#[derive(Clone, PartialEq, Debug)]
+pub enum TokenData {
+    Number(f64),
+    Operator(Operator),
+}
+
+impl Display for TokenData {
+    fn fmt(&self, f: &mut Formatter) -> Result {
+        match self.clone() {
+            TokenData::Number(num) => write!(f, "{}", num),
+            TokenData::Operator(op) => write!(f, "{}", op)
+        }
+    }
+}
+
+#[derive(PartialEq, Clone, Debug)]
+pub enum Operator {
+    /// `+`
+    Add,
+    /// `-`
+    Sub,
+    /// `*`
+    Mul,
+    /// `/`
+    Div,
+}
+
+impl Display for Operator {
+    fn fmt(&self, f: &mut Formatter) -> Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                Operator::Add => "+",
+                Operator::Sub => "-",
+                Operator::Mul => "*",
+                Operator::Div => "/"
+            }
+        )
+    }
+}

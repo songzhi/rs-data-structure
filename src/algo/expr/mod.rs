@@ -1,3 +1,18 @@
+pub mod lexer;
+pub mod token;`
+
+pub trait Expr {
+    fn eval(&self) -> Option<i64>;
+    fn from_str() -> Self;
+}
+
+pub struct PrefixExpr(String);
+
+pub struct InfixExpr(String);
+
+pub struct PostfixExpr(String);
+
+
 pub fn infix_expr_to_post(tokens: impl Iterator<Item=char>) -> String {
     let mut post_expr = String::new();
     let mut stack = vec![];
