@@ -23,4 +23,9 @@ fn display_bin_search_tree() {
 
 fn main() {
     display_bin_search_tree();
+    use expr::*;
+    use std::str::FromStr;
+    let infix_expr: Expr<Infix> = Expr::from_str("1+2*(5-3)").unwrap();
+    let pre :Expr<Prefix> = infix_expr.into();
+    println!("{}", format!("{}", pre));
 }

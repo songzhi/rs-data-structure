@@ -68,6 +68,7 @@ impl ExprType for Postfix {
     fn is_postfix() -> bool { true }
 }
 
+#[derive(Debug, Clone)]
 pub struct Expr<Ty = Infix> {
     tokens: Vec<Token>,
     ty: PhantomData<Ty>,
@@ -114,6 +115,12 @@ impl Expr<Prefix> {
             }
         }
         stack.pop()
+    }
+}
+
+impl Expr<Infix> {
+    pub fn eval(&self) -> Option<f64> {
+        Expr::<Postfix>::from(self.clone()).eval()
     }
 }
 
@@ -332,5 +339,11 @@ mod test {
         let infix_expr: Expr<Infix> = Expr::from_str("1+2*(5-3)").unwrap();
         let prefix_expr: Expr<Prefix> = infix_expr.into();
         assert_eq!(Some(5.0), prefix_expr.eval());
+    }
+
+    #[test]
+    fn test_eval_infix_expr() {
+        let infix_expr: Expr<Infix> = Expr::from_str("1+2*(5-3)").unwrap();
+        assert_eq!(Some(5.0), infix_expr.eval());
     }
 }
