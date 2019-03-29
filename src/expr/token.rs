@@ -1,7 +1,7 @@
 use std::fmt::{Display, Error, Formatter, Result, Debug};
 
 /// Represents a token
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Copy)]
 pub struct Token {
     pub data: TokenData,
     pub pos: usize,
@@ -32,7 +32,7 @@ impl Debug for VecToken {
     }
 }
 
-#[derive(Clone, PartialEq, Debug)]
+#[derive(Clone, PartialEq, Debug, Copy)]
 pub enum TokenData {
     Number(f64),
     Operator(Operator),
@@ -49,7 +49,7 @@ impl Display for TokenData {
     }
 }
 
-#[derive(PartialEq, Clone, Debug)]
+#[derive(PartialEq, Clone, Debug, Copy)]
 pub enum Operator {
     /// `+`
     Add,
@@ -76,7 +76,7 @@ impl Display for Operator {
     }
 }
 
-#[derive(PartialEq, Clone, Debug)]
+#[derive(PartialEq, Clone, Debug, Copy)]
 pub enum Paren {
     /// `(`
     Open,
