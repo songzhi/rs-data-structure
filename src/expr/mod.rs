@@ -1,5 +1,5 @@
 pub mod lexer;
-pub mod token;`
+pub mod token;
 
 pub trait Expr {
     fn eval(&self) -> Option<i64>;
@@ -87,7 +87,7 @@ pub fn eval_post_expr(expr: impl Iterator<Item=char>) -> Option<i64> {
 
 #[cfg(test)]
 mod test {
-    use crate::algo::expr::{infix_expr_to_post, eval_post_expr};
+    use super::*;
 
     #[test]
     fn test_infix_expr_to_post() {
