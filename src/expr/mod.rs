@@ -83,6 +83,40 @@ impl<Ty> Expr<Ty> {
     }
 }
 
+impl Expr<Postfix> {
+    pub fn eval(&self) -> Option<f64> {
+        let mut stack: Vec<f64> = vec![];
+        for token in self.tokens.iter() {
+            match token.data.clone() {
+                TokenData::Operator(op) => {
+                    match op {
+                        Operator::Add => {
+                            let (x, y) = (stack.pop()?, stack.pop()?);
+                            stack.push(y + x);
+                        }
+                        Operator::Sub => {
+                            let (x, y) = (stack.pop()?, stack.pop()?);
+                            stack.push(y - x);
+                        }
+                        Operator::Mul => {
+                            let (x, y) = (stack.pop()?, stack.pop()?);
+                            stack.push(y * x);
+                        }
+                        Operator::Div => {
+                            let (x, y) = (stack.pop()?, stack.pop()?);
+                            stack.push(y / x);
+                        }
+                    }
+                }
+                TokenData::Number(num) => {
+                    stack.push(num);
+                }
+                _ => ()
+            }
+        }
+        stack.pop()
+    }
+}
 
 impl<Ty> FromStr for Expr<Ty> {
     type Err = LexerError;
