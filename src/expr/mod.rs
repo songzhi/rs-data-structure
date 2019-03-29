@@ -82,6 +82,41 @@ impl<Ty> Expr<Ty> {
     }
 }
 
+impl Expr<Prefix> {
+    pub fn eval(&self) -> Option<f64> {
+        let mut stack: Vec<f64> = vec![];
+        for token in self.tokens.iter().rev() {
+            match token.data {
+                TokenData::Operator(op) => {
+                    match op {
+                        Operator::Add => {
+                            let (x, y) = (stack.pop()?, stack.pop()?);
+                            stack.push(x + y);
+                        }
+                        Operator::Sub => {
+                            let (x, y) = (stack.pop()?, stack.pop()?);
+                            stack.push(x - y);
+                        }
+                        Operator::Mul => {
+                            let (x, y) = (stack.pop()?, stack.pop()?);
+                            stack.push(x * y);
+                        }
+                        Operator::Div => {
+                            let (x, y) = (stack.pop()?, stack.pop()?);
+                            stack.push(x / y);
+                        }
+                    }
+                }
+                TokenData::Number(num) => {
+                    stack.push(num);
+                }
+                _ => ()
+            }
+        }
+        stack.pop()
+    }
+}
+
 impl Expr<Postfix> {
     pub fn eval(&self) -> Option<f64> {
         let mut stack: Vec<f64> = vec![];
@@ -290,5 +325,12 @@ mod test {
         let infix_expr: Expr<Infix> = Expr::from_str("1+2*(5-3)").unwrap();
         let prefix_expr: Expr<Prefix> = infix_expr.into();
         assert_eq!("+1*2-53", format!("{}", prefix_expr));
+    }
+
+    #[test]
+    fn test_eval_prefix_expr() {
+        let infix_expr: Expr<Infix> = Expr::from_str("1+2*(5-3)").unwrap();
+        let prefix_expr: Expr<Prefix> = infix_expr.into();
+        assert_eq!(Some(5.0), prefix_expr.eval());
     }
 }
