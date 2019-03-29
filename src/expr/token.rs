@@ -3,8 +3,8 @@ use std::fmt::{Display, Error, Formatter, Result, Debug};
 /// Represents a token
 #[derive(Debug, Clone, PartialEq)]
 pub struct Token {
-    data: TokenData,
-    pos: usize,
+    pub data: TokenData,
+    pub pos: usize,
 }
 
 impl Token {

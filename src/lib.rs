@@ -13,3 +13,4 @@ pub mod hashmap;
 pub mod heap;
 pub mod graph;
 pub mod tree;
+pub mod expr;
