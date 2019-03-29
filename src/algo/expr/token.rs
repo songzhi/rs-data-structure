@@ -36,13 +36,15 @@ impl Debug for VecToken {
 pub enum TokenData {
     Number(f64),
     Operator(Operator),
+    Paren(Paren),
 }
 
 impl Display for TokenData {
     fn fmt(&self, f: &mut Formatter) -> Result {
         match self.clone() {
             TokenData::Number(num) => write!(f, "{}", num),
-            TokenData::Operator(op) => write!(f, "{}", op)
+            TokenData::Operator(op) => write!(f, "{}", op),
+            TokenData::Paren(paren) => write!(f, "{}", paren)
         }
     }
 }
@@ -69,6 +71,27 @@ impl Display for Operator {
                 Operator::Sub => "-",
                 Operator::Mul => "*",
                 Operator::Div => "/"
+            }
+        )
+    }
+}
+
+#[derive(PartialEq, Clone, Debug)]
+pub enum Paren {
+    /// `(`
+    Open,
+    /// `)`
+    Close,
+}
+
+impl Display for Paren {
+    fn fmt(&self, f: &mut Formatter) -> Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                Paren::Open => "(",
+                Paren::Close => ")"
             }
         )
     }
