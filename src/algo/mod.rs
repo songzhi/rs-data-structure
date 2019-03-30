@@ -5,3 +5,4 @@ pub mod fib_4th_order;
 pub mod car;
 pub mod bank;
 pub mod maze;
+pub mod saddle_point;
