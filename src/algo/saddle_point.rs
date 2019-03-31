@@ -18,23 +18,16 @@ impl PartialEq for Pos {
 impl Eq for Pos {}
 
 pub fn saddle_points<T: Ord>(matrix: &Vec<Vec<T>>) -> Vec<(usize, usize)> {
-    let mut row_min_set = HashSet::new();
-    let mut col_max_set = HashSet::new();
-    for (i, row) in matrix.iter().enumerate() {
-        let (j, _) = row.iter().enumerate().min_by_key(|(i, &elem)| elem).unwrap();
-        row_min_set.insert(Pos(i, j));
-    }
-    let matrix_len = matrix.len();
-    for j in 0..matrix_len {
-        let mut max = &matrix[0][j];
-        let mut max_index = 0;
-        for i in 1..matrix_len {
-            if matrix[i][j] > *max {
-                max = &matrix[i][j];
-                max_index = i;
+    let row_mins: Vec<(usize, usize)> = matrix.iter().enumerate().map(|(i, row)| {
+        (i, row.iter().enumerate().min_by_key(|&(_, elem)| elem).unwrap().0)
+    }).collect();
+    let is_max_in_col = |&(x, y): &(usize, usize)| {
+        for i in 0..matrix.len() {
+            if matrix[i][y] > matrix[x][y] {
+                return false;
             }
         }
-        col_max_set.insert(Pos(max_index, j));
-    }
-    row_min_set.intersection(&col_max_set).map(|&Pos(x, y)| (x, y)).collect()
+        true
+    };
+    row_mins.into_iter().filter(is_max_in_col).collect()
 }
