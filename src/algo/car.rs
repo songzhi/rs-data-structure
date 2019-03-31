@@ -3,6 +3,7 @@
 //! 汽车的输入信息格式可以是（进入/离开，车牌号，进入/离 开时间），要求可以随时显示停车场内的车辆信息以及收费历史记录。
 use std::collections::HashMap;
 use std::str::FromStr;
+use std::collections::vec_deque::VecDeque;
 
 #[derive(Debug, Eq, PartialEq)]
 pub enum Action {
@@ -74,22 +75,37 @@ type ChargeRecord = (Action, Action, Car, ParkingFee);
 pub struct ParkingLot {
     cars: HashMap<String, (Car, usize)>,
     history: Vec<ChargeRecord>,
+    waiting_list: VecDeque<(Car, usize)>,
 }
 
 impl ParkingLot {
+    const CAPACITY: usize = 100;
+
     pub fn new() -> Self {
         Self {
             cars: HashMap::new(),
             history: vec![],
+            waiting_list: VecDeque::new(),
         }
     }
-    pub fn add_car(&mut self, car: Car, enter_time: usize) {
-        self.cars.insert(car.plate_number.clone(), (car, enter_time));
+    pub fn add_car(&mut self, car: Car, enter_time: usize) -> bool {
+        if self.is_full() {
+            self.waiting_list.push_back((car, enter_time));
+            false
+        } else {
+            self.cars.insert(car.plate_number.clone(), (car, enter_time));
+            true
+        }
     }
     pub fn remove_car(&mut self, plate_number: &str, leave_time: usize) -> Option<usize> {
         let (car, enter_time) = self.cars.remove(plate_number)?;
         let parking_fee = leave_time - enter_time;
         self.history.push((Action::Enter(enter_time), Action::Leave(leave_time), car, parking_fee.into()));
+        if !self.is_full() {
+            if let Some((car, enter_time)) = self.waiting_list.pop_front() {
+                self.cars.insert(car.plate_number.clone(), (car, enter_time));
+            }
+        }
         Some(parking_fee)
     }
 
@@ -100,10 +116,13 @@ impl ParkingLot {
         let action = Action::from_str(split.next().ok_or(())?)?;
         let plate_number = split.next().ok_or(())?;
         match action {
-            Action::Enter(time) => self.add_car(Car::new(plate_number), time),
+            Action::Enter(time) => { self.add_car(Car::new(plate_number), time); }
             Action::Leave(time) => { self.remove_car(plate_number, time); }
         }
         Ok(())
+    }
+    pub fn is_full(&self) -> bool {
+        self.cars.len() >= Self::CAPACITY
     }
 }
 
