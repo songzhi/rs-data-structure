@@ -33,13 +33,13 @@ impl<T> Node<T> {
     pub fn get_head(&self) -> Link<T> {
         match self {
             Node::Atom(_) => None,
-            Node::List(hp, _) => hp.map(|p| p.clone())
+            Node::List(hp, _) => hp.clone()
         }
     }
     pub fn get_tail(&self) -> Link<T> {
         match self {
             Node::Atom(_) => None,
-            Node::List(_, tp) => tp.map(|p| p.clone())
+            Node::List(_, tp) => tp.clone()
         }
     }
     pub fn depth(&self) -> usize {
@@ -54,7 +54,7 @@ impl<T> Node<T> {
                 max = dep;
             }
             if let Some(tp) = tp {
-                node = tp.as_ref().get_mut();
+                node = unsafe { &*(tp.as_ref().as_ptr()) };
             } else {
                 break;
             }
