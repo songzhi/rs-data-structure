@@ -14,3 +14,4 @@ pub mod heap;
 pub mod graph;
 pub mod tree;
 pub mod expr;
+pub mod glist; // generalized list
