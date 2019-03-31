@@ -4,11 +4,17 @@ use std::cell::RefCell;
 type Link<T> = Option<Rc<RefCell<Node<T>>>>;
 
 pub enum Node<T> {
-    Atom(Rc<RefCell<T>>),
+    Atom(T),
     List(Link<T>, Link<T>), // List(head, tail)
 }
 
 impl<T> Node<T> {
+    pub fn new_atom(data: T) -> Self {
+        Node::Atom(data)
+    }
+    pub fn new_list(head: Link<T>, tail: Link<T>) -> Self {
+        Node::List(head, tail)
+    }
     pub fn is_atom(&self) -> bool {
         match self {
             Node::Atom(_) => true,
