@@ -2,7 +2,7 @@ use super::{
     edge::{Direction, EdgeType, IntoWeightedEdge},
     node::NodeTrait,
 };
-use indexmap::{IndexMap, IndexSet};
+use indexmap::IndexMap;
 use std::iter::FromIterator;
 use std::marker::PhantomData;
 use crate::graph::node::Nodes;
@@ -10,9 +10,7 @@ use crate::graph::traverse::{Neighbors, NeighborsDirected};
 use crate::graph::edge::{Edges, AllEdges};
 use std::hash::Hash;
 use std::fmt;
-use std::fmt::Debug;
 use std::collections::vec_deque::VecDeque;
-use std::fmt::rt::v1::Count::Param;
 use std::collections::HashSet;
 
 /// Marker type for a directed graph.
@@ -310,7 +308,7 @@ impl<N, E> Graph<N, E, Directed>
     pub fn topological_sort(&mut self) -> Option<Vec<N>> {
         let mut res = Vec::with_capacity(self.node_count());
         let mut nodes_with_indegree: IndexMap<N, usize> = self.nodes.iter()
-            .map(|(n, adjs)|
+            .map(|(n, _)|
                 (*n, self.incoming_degree(*n)))
             .collect();
         let mut que: VecDeque<N> = nodes_with_indegree.iter()

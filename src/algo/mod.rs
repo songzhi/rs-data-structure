@@ -6,3 +6,4 @@ pub mod car;
 pub mod bank;
 pub mod maze;
 pub mod saddle_point;
+pub mod four_color;

@@ -134,7 +134,7 @@ pub fn test() {
     ];
     let mut parking_lot = ParkingLot::new();
     for line in lines {
-        parking_lot.parse_line(line);
+        parking_lot.parse_line(line).unwrap();
         println!("{:?}", parking_lot);
     }
 }

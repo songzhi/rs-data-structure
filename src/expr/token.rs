@@ -1,4 +1,4 @@
-use std::fmt::{Display, Error, Formatter, Result, Debug};
+use std::fmt::{Display, Formatter, Result, Debug};
 
 /// Represents a token
 #[derive(Debug, Clone, PartialEq, Copy)]

@@ -5,7 +5,7 @@ use crate::expr::token::Operator;
 use crate::expr::lexer::{Lexer, LexerError};
 use std::str::FromStr;
 use crate::expr::token::Paren;
-use std::fmt::{Debug, Formatter, Display};
+use std::fmt::{Formatter, Display};
 
 pub mod lexer;
 pub mod token;

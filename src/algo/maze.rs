@@ -89,7 +89,7 @@ impl Maze {
                 current_block = current_block.next_block();
             } else {
                 let mut iter = stack.into_iter();
-                iter.by_ref().take_while(|block| block.direction == Direction::North);
+                iter.by_ref().take_while(|block| block.direction == Direction::North).count();
                 stack = iter.collect();
                 if let Some(mut block) = stack.pop() {
                     block.direction = block.direction.next_direction().unwrap();
