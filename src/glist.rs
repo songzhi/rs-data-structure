@@ -3,7 +3,7 @@
 use std::rc::Rc;
 use std::cell::RefCell;
 use std::iter::Peekable;
-use std::str::Chars;
+use std::str::{Chars, FromStr};
 use std::{fmt, error};
 
 type Link<T> = Option<Rc<RefCell<Node<T>>>>;
@@ -17,8 +17,9 @@ impl<T> Node<T> {
     pub fn new_atom(data: T) -> Self {
         Node::Atom(data)
     }
-    pub fn new_list(head: Link<T>, tail: Link<T>) -> Self {
-        Node::List(head, tail)
+    pub fn new_list(head: Option<Self>, tail: Option<Self>) -> Self {
+        Node::List(head.map(|node| Rc::new(RefCell::new(node))),
+                   tail.map(|node| Rc::new(RefCell::new(node))))
     }
     pub fn is_atom(&self) -> bool {
         match self {
@@ -66,6 +67,7 @@ impl<T> Node<T> {
     }
 }
 
+#[derive(Debug, Clone, Eq, PartialEq)]
 enum Token {
     Comma,
     OpenParen,
@@ -104,7 +106,7 @@ impl error::Error for LexerError {
 }
 
 struct Lexer<'a> {
-    tokens: Vec<Token>,
+    pub tokens: Vec<Token>,
     buffer: Peekable<Chars<'a>>,
 }
 
@@ -153,7 +155,7 @@ impl<'a> Lexer<'a> {
                 ',' => self.tokens.push(Token::Comma),
                 _ if ch.is_whitespace() => (),
                 _ => {
-                    let mut buf = String::new();
+                    let mut buf = ch.to_string();
                     loop {
                         let ch = self.preview_next()?;
                         match ch {
@@ -168,5 +170,34 @@ impl<'a> Lexer<'a> {
                 }
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn test_lexer() {
+        let buf = "(abc, ( d,(( ),(f)))";
+        let mut lexer = Lexer::new(buf);
+        lexer.lex().expect("lex failed");
+        assert_eq!(vec![
+            Token::OpenParen,
+            Token::Identifier(String::from("abc")),
+            Token::Comma,
+            Token::OpenParen,
+            Token::Identifier(String::from("d")),
+            Token::Comma,
+            Token::OpenParen,
+            Token::OpenParen,
+            Token::CloseParen,
+            Token::Comma,
+            Token::OpenParen,
+            Token::Identifier(String::from("f")),
+            Token::CloseParen,
+            Token::CloseParen,
+            Token::CloseParen,
+        ], lexer.tokens);
     }
 }
