@@ -5,9 +5,14 @@ use std::cell::RefCell;
 use std::iter::Peekable;
 use std::str::{Chars, FromStr};
 use std::{fmt, error};
+use std::fmt::{Display, Formatter};
+use core::fmt::Debug;
+use std::intrinsics::write_bytes;
+use core::borrow::Borrow;
 
 type Link<T> = Option<Rc<RefCell<Node<T>>>>;
 
+#[derive(Debug)]
 pub enum Node<T> {
     Atom(T),
     List(Link<T>, Link<T>), // List(head, tail)
@@ -64,6 +69,25 @@ impl<T> Node<T> {
             }
         }
         max + 1
+    }
+}
+
+impl<T: Display> Display for Node<T> {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        match self {
+            Node::Atom(data) => { write!(f, "{}", data)?; }
+            Node::List(head, tail) => {
+                write!(f, "(")?;
+                if let Some(head) = head {
+                    write!(f, "{}", head.as_ref().borrow())?;
+                };
+                if let Some(tail) = tail {
+                    write!(f, "{}", tail.as_ref().borrow())?;
+                };
+                write!(f, ")")?;
+            }
+        };
+        Ok(())
     }
 }
 
@@ -200,4 +224,7 @@ mod test {
             Token::CloseParen,
         ], lexer.tokens);
     }
+
+    #[test]
+    fn test_glist_from_str() {}
 }
