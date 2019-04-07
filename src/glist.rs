@@ -6,9 +6,6 @@ use std::iter::Peekable;
 use std::str::{Chars, FromStr};
 use std::{fmt, error};
 use std::fmt::{Display, Formatter};
-use core::fmt::Debug;
-use std::intrinsics::write_bytes;
-use core::borrow::Borrow;
 
 type Link<T> = Option<Rc<RefCell<Node<T>>>>;
 
@@ -72,6 +69,53 @@ impl<T> Node<T> {
     }
 }
 
+impl FromStr for Node<String> {
+    type Err = ParserError;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let mut lexer = Lexer::new(s);
+        lexer.lex()?;
+        let mut stack = Vec::<Self>::new();
+        let mut peekable = lexer.tokens.into_iter().peekable();
+        loop {
+            let token = if let Some(token) = peekable.next() {
+                token
+            } else {
+                break;
+            };
+            match token {
+                Token::OpenParen => {
+                    let token = peekable.peek().ok_or(ParserError::new("finished"))?;
+                    if *token == Token::CloseParen {
+                        peekable.next().unwrap();
+                        stack.push(Node::new_list(None, None))
+                    }
+                }
+                Token::Identifier(s) => {
+                    let head = Node::new_atom(s);
+                    let next = peekable.peek().ok_or(ParserError::new("finished"))?;
+                    if *next == Token::CloseParen {
+                        peekable.next().unwrap();
+                        stack.push(Node::new_list(Some(head), None))
+                    } else {
+                        stack.push(head);
+                    }
+                }
+                Token::Comma => {}
+                Token::CloseParen => {
+                    let tail = stack.pop().ok_or(ParserError::new("stack is empty"))?;
+                    let head = stack.pop().ok_or(ParserError::new("stack is empty"))?;
+                    stack.push(Node::new_list(Some(head), Some(tail)));
+                }
+            }
+        }
+        if stack.len() != 1 {
+            Err(ParserError::new("more than 1 node in stack"))
+        } else {
+            stack.pop().ok_or(ParserError::new("stack is empty"))
+        }
+    }
+}
+
 impl<T: Display> Display for Node<T> {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         match self {
@@ -82,7 +126,7 @@ impl<T: Display> Display for Node<T> {
                     write!(f, "{}", head.as_ref().borrow())?;
                 };
                 if let Some(tail) = tail {
-                    write!(f, "{}", tail.as_ref().borrow())?;
+                    write!(f, ",{}", tail.as_ref().borrow())?;
                 };
                 write!(f, ")")?;
             }
@@ -100,25 +144,25 @@ enum Token {
 }
 
 #[derive(Debug, Clone)]
-pub struct LexerError {
+pub struct ParserError {
     details: String,
 }
 
-impl LexerError {
-    fn new(msg: &str) -> LexerError {
-        LexerError {
+impl ParserError {
+    fn new(msg: &str) -> ParserError {
+        ParserError {
             details: msg.to_string(),
         }
     }
 }
 
-impl fmt::Display for LexerError {
+impl fmt::Display for ParserError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", self.details)
     }
 }
 
-impl error::Error for LexerError {
+impl error::Error for ParserError {
     fn description(&self) -> &str {
         &self.details
     }
@@ -142,23 +186,23 @@ impl<'a> Lexer<'a> {
         }
     }
     /// next fetches the next token and return it, or a LexerError if there are no more.
-    fn next(&mut self) -> Result<char, LexerError> {
+    fn next(&mut self) -> Result<char, ParserError> {
         match self.buffer.next() {
             Some(char) => Ok(char),
-            None => Err(LexerError::new("finished")),
+            None => Err(ParserError::new("finished")),
         }
     }
 
     /// Preview the next character but don't actually increment
-    fn preview_next(&mut self) -> Result<char, LexerError> {
+    fn preview_next(&mut self) -> Result<char, ParserError> {
         // No need to return a reference, we can return a copy
         match self.buffer.peek() {
             Some(v) => Ok(*v),
-            None => Err(LexerError::new("finished")),
+            None => Err(ParserError::new("finished")),
         }
     }
 
-    fn lex(&mut self) -> Result<(), LexerError> {
+    fn lex(&mut self) -> Result<(), ParserError> {
         loop {
             // Check if we've reached the end
             match self.preview_next() {
@@ -203,7 +247,7 @@ mod test {
 
     #[test]
     fn test_lexer() {
-        let buf = "(abc, ( d,(( ),(f)))";
+        let buf = "(abc, ( d,(( ),(f))))";
         let mut lexer = Lexer::new(buf);
         lexer.lex().expect("lex failed");
         assert_eq!(vec![
@@ -222,9 +266,14 @@ mod test {
             Token::CloseParen,
             Token::CloseParen,
             Token::CloseParen,
+            Token::CloseParen,
         ], lexer.tokens);
     }
 
     #[test]
-    fn test_glist_from_str() {}
+    fn test_glist_from_str() {
+        let s = "(abc, ( d,(( ),(f))))";
+        let node = Node::from_str(s).unwrap();
+        assert_eq!("(abc,(d,((),(f))))", format!("{}", node));
+    }
 }
