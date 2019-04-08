@@ -84,27 +84,30 @@ impl FromStr for Node<String> {
             };
             match token {
                 Token::OpenParen => {
+                    stack.push(Node::new_list(None, None));
                     let token = peekable.peek().ok_or(ParserError::new("finished"))?;
                     if *token == Token::CloseParen {
                         peekable.next().unwrap();
-                        stack.push(Node::new_list(None, None))
                     }
                 }
-                Token::Identifier(s) => {
-                    let head = Node::new_atom(s);
-                    let next = peekable.peek().ok_or(ParserError::new("finished"))?;
-                    if *next == Token::CloseParen {
-                        peekable.next().unwrap();
-                        stack.push(Node::new_list(Some(head), None))
-                    } else {
-                        stack.push(head);
-                    }
-                }
-                Token::Comma => {}
-                Token::CloseParen => {
-                    let tail = stack.pop().ok_or(ParserError::new("stack is empty"))?;
+                Token::Identifier(s) => stack.push(Node::new_atom(s)),
+                Token::Comma => {
                     let head = stack.pop().ok_or(ParserError::new("stack is empty"))?;
-                    stack.push(Node::new_list(Some(head), Some(tail)));
+                    let mut list = stack.pop().ok_or(ParserError::new("stack is empty"))?;
+                    if let Node::List(ref mut hp, _) = list {
+                        *hp = Some(Rc::new(RefCell::new(head)));
+                    }
+                    stack.push(list);
+                }
+                Token::CloseParen => {
+                    let node = stack.pop().ok_or(ParserError::new("stack is empty"))?;
+                    let mut list = stack.pop().ok_or(ParserError::new("stack is empty"))?;
+                    match list {
+                        Node::List(Some(_), ref mut tail) => *tail = Some(Rc::new(RefCell::new(node))),
+                        Node::List(ref mut head, _) => *head = Some(Rc::new(RefCell::new(node))),
+                        _ => ()
+                    }
+                    stack.push(list);
                 }
             }
         }
@@ -141,6 +144,17 @@ enum Token {
     OpenParen,
     CloseParen,
     Identifier(String),
+}
+
+impl Display for Token {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        write!(f, "{}", match self {
+            Token::CloseParen => ")",
+            Token::OpenParen => "(",
+            Token::Comma => ",",
+            Token::Identifier(s) => s.as_str()
+        })
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -275,5 +289,12 @@ mod test {
         let s = "(abc, ( d,(( ),(f))))";
         let node = Node::from_str(s).unwrap();
         assert_eq!("(abc,(d,((),(f))))", format!("{}", node));
+    }
+
+    #[test]
+    fn test_depth() {
+        let s = "((),((e),((a,((b,(c,(d))))))))";
+        let node = Node::from_str(s).unwrap();
+        assert_eq!(3, node.depth());
     }
 }
