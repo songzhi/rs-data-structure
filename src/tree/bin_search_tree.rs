@@ -1,6 +1,17 @@
-use super::bintree::{Node, Link};
+use super::bintree::{Node as CommonNode, Link as CommonLink, BinTreeType};
 use std::fmt::Display;
 use std::fmt;
+
+
+#[derive(Copy, Clone, Debug)]
+pub struct BinSearchTreeType {}
+
+impl BinTreeType for BinSearchTreeType {
+    fn is_searchable() -> bool { true }
+}
+
+type Link<T> = CommonLink<T, BinSearchTreeType>;
+type Node<T> = CommonNode<T, BinSearchTreeType>;
 
 pub struct BinSearchTree<T>
     where T: Ord {
@@ -54,16 +65,7 @@ impl<T> Display for BinSearchTree<T>
     }
 }
 
-pub trait BinarySearchTreeNode<T>
-    where T: Ord, Self: std::marker::Sized {
-    fn find(&self, elem: T) -> Option<&Self>;
-    fn find_min(&self) -> &Self;
-    fn find_max(&self) -> &Self;
-    fn insert(&mut self, elem: T);
-    fn delete(self, elem: T) -> Option<Self>;
-}
-
-impl<T> BinarySearchTreeNode<T> for Node<T>
+impl<T> Node<T>
     where T: Ord {
     fn find(&self, elem: T) -> Option<&Node<T>> {
         if elem < self.elem {
@@ -152,10 +154,12 @@ impl<T> BinarySearchTreeNode<T> for Node<T>
     }
 }
 
+#[inline]
 fn unbox_link<T>(link: &Link<T>) -> Option<&Node<T>> {
     link.as_ref().map(|node| &**node)
 }
 
+#[inline]
 fn unbox_link_mut<T>(link: &mut Link<T>) -> Option<&mut Node<T>> {
     link.as_mut().map(|node| &mut **node)
 }

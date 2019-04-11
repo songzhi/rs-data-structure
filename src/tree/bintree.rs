@@ -3,14 +3,28 @@ use std::collections::vec_deque::VecDeque;
 use core::fmt;
 use core::fmt::Display;
 use crate::utils::width_in_fmt;
+use std::marker::PhantomData;
 
-pub type Link<T> = Option<Box<Node<T>>>;
+pub type Link<T, Ty = CommonBinTreeType> = Option<Box<Node<T, Ty>>>;
+
+pub trait BinTreeType {
+    fn is_searchable() -> bool { false }
+    fn is_avl() -> bool { false }
+}
+
+#[derive(Copy, Clone, Debug)]
+pub struct CommonBinTreeType {}
+
+impl BinTreeType for CommonBinTreeType {}
+
 
 #[derive(Debug, Clone)]
-pub struct Node<T> {
+pub struct Node<T, Ty = CommonBinTreeType>
+    where Ty: BinTreeType {
     pub elem: T,
-    pub left: Link<T>,
-    pub right: Link<T>,
+    pub left: Link<T, Ty>,
+    pub right: Link<T, Ty>,
+    _ty: PhantomData<Ty>,
 }
 
 #[derive(Debug, Clone)]
@@ -78,19 +92,22 @@ impl<T: Display> Display for BinTree<T> {
     }
 }
 
-impl<T> Node<T> {
+impl<T, Ty> Node<T, Ty>
+    where Ty: BinTreeType {
     pub fn new(elem: T) -> Self {
         Self {
             elem,
             left: None,
             right: None,
+            _ty: PhantomData,
         }
     }
-    pub fn with_children(elem: T, left: Link<T>, right: Link<T>) -> Self {
+    pub fn with_children(elem: T, left: Link<T, Ty>, right: Link<T, Ty>) -> Self {
         Self {
             elem,
             left,
             right,
+            _ty: PhantomData,
         }
     }
     pub fn traverse_pre(&self, visit: &mut impl FnMut(&T)) {
@@ -117,7 +134,7 @@ impl<T> Node<T> {
             node.right.as_ref().map(|n| que.push_back(&*n));
         }
     }
-    pub fn from_post_expr(tokens: impl Iterator<Item=T>, is_operator: impl Fn(&T) -> bool) -> Link<T> {
+    pub fn from_post_expr(tokens: impl Iterator<Item=T>, is_operator: impl Fn(&T) -> bool) -> Link<T, Ty> {
         let mut stack = vec![];
         for symbol in tokens {
             if is_operator(&symbol) {
@@ -142,8 +159,9 @@ impl<T> Node<T> {
     }
 }
 
-impl<T: PartialEq> Node<T> {
-    pub fn from_seq_pre(seq_itr: &mut impl Iterator<Item=T>, null_val: &T) -> Link<T> {
+impl<T: PartialEq, Ty> Node<T, Ty>
+    where Ty: BinTreeType {
+    pub fn from_seq_pre(seq_itr: &mut impl Iterator<Item=T>, null_val: &T) -> Link<T, Ty> {
         let elem = seq_itr.next()?;
         if elem == *null_val {
             return None;
@@ -154,7 +172,7 @@ impl<T: PartialEq> Node<T> {
             Some(tree)
         }
     }
-    pub fn from_seq_in(seq_itr: &mut impl Iterator<Item=T>, null_val: &T) -> Link<T> {
+    pub fn from_seq_in(seq_itr: &mut impl Iterator<Item=T>, null_val: &T) -> Link<T, Ty> {
         let elem = seq_itr.next()?;
         if elem == *null_val {
             return None;
@@ -166,7 +184,7 @@ impl<T: PartialEq> Node<T> {
             Some(tree)
         }
     }
-    pub fn from_seq_post(seq_itr: &mut impl Iterator<Item=T>, null_val: &T) -> Link<T> {
+    pub fn from_seq_post(seq_itr: &mut impl Iterator<Item=T>, null_val: &T) -> Link<T, Ty> {
         let elem = seq_itr.next()?;
         if elem == *null_val {
             return None;
@@ -182,9 +200,11 @@ impl<T: PartialEq> Node<T> {
 }
 
 
-impl<T: Display> Display for Node<T> {
+impl<T: Display, Ty> Display for Node<T, Ty>
+    where Ty: BinTreeType {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        fn fill_map<'a, T>(map: &mut Vec<Option<&'a Node<T>>>, node: &'a Node<T>, index: usize) {
+        fn fill_map<'a, T, Ty>(map: &mut Vec<Option<&'a Node<T, Ty>>>, node: &'a Node<T, Ty>, index: usize)
+            where Ty: BinTreeType {
             map[index] = Some(node);
             if let Some(ref left) = node.left {
                 fill_map(map, &*left, index * 2 + 1);
