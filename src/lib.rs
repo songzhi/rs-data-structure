@@ -9,7 +9,7 @@ pub mod list;
 pub mod deque;
 pub mod algo;
 pub mod utils;
-pub mod hashmap;
+pub mod hash;
 pub mod heap;
 pub mod graph;
 pub mod tree;
