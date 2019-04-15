@@ -1,4 +1,6 @@
 use crate::cfg_if;
+use super::CollectionAllocErr;
+use super::alloc::alloc::{alloc, dealloc, handle_alloc_error};
 use core::alloc::Layout;
 use core::hint;
 use core::iter::FusedIterator;
@@ -61,4 +63,31 @@ unsafe fn offset_from<T>(to: *const T, from: *const T) -> usize {
 #[inline]
 unsafe fn offset_from<T>(to: *const T, from: *const T) -> usize {
     (to as usize - from as usize) / mem::size_of::<T>()
+}
+
+/// Whether memory allocation errors should return an error or abort.
+#[derive(Copy, Clone)]
+enum Fallibility {
+    Fallible,
+    Infallible,
+}
+
+impl Fallibility {
+    /// Error to return on capacity overflow.
+    #[inline]
+    fn capacity_overflow(self) -> CollectionAllocErr {
+        match self {
+            Fallibility::Fallible => CollectionAllocErr::CapacityOverflow,
+            Fallibility::Infallible => panic!("Hash table capacity overflow"),
+        }
+    }
+
+    /// Error to return on allocation error.
+    #[inline]
+    fn alloc_err(self, layout: Layout) -> CollectionAllocErr {
+        match self {
+            Fallibility::Fallible => CollectionAllocErr::AllocErr,
+            Fallibility::Infallible => handle_alloc_error(layout),
+        }
+    }
 }
