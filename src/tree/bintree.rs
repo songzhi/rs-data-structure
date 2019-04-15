@@ -5,7 +5,7 @@ use core::fmt::Display;
 use crate::utils::width_in_fmt;
 use std::marker::PhantomData;
 
-pub type Link<T, Ty = CommonBinTreeType> = Option<Box<Node<T, Ty>>>;
+pub type Link<T, Ty = BasicBinTree> = Option<Box<Node<T, Ty>>>;
 
 pub trait BinTreeType {
     fn is_searchable() -> bool { false }
@@ -13,13 +13,13 @@ pub trait BinTreeType {
 }
 
 #[derive(Copy, Clone, Debug)]
-pub struct CommonBinTreeType {}
+pub struct BasicBinTree {}
 
-impl BinTreeType for CommonBinTreeType {}
+impl BinTreeType for BasicBinTree {}
 
 
 #[derive(Debug, Clone)]
-pub struct Node<T, Ty = CommonBinTreeType>
+pub struct Node<T, Ty = BasicBinTree>
     where Ty: BinTreeType {
     pub elem: T,
     pub left: Link<T, Ty>,
