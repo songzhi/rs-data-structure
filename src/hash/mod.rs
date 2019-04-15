@@ -1,7 +1,7 @@
 mod raw;
 mod fx;
 mod map;
-
+mod scopeguard;
 #[macro_use]
 mod macros;
 
