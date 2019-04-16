@@ -4,6 +4,18 @@ mod map;
 mod scopeguard;
 #[macro_use]
 mod macros;
+mod set;
+
+pub use self::map::HashMap;
+pub use self::set::HashSet;
+
+pub mod hash_map {
+    pub use super::map::*;
+}
+
+pub mod hash_set {
+    pub use super::set::*;
+}
 
 #[cfg(feature = "nightly")]
 #[cfg_attr(test, macro_use)]
