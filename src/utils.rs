@@ -10,7 +10,7 @@ use unicode_width::UnicodeWidthStr;
 /// ## What I want:
 ///
 /// Here's my solution,It's simple but works:
-/// ```rust
+/// ```rust ignore
 /// let total_displayed_width = 10;
 /// let chars_count = "你好".chars().count();
 /// let content_displayed_width = UnicodeWidthStr::width("你好");
