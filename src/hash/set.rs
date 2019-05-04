@@ -1,4 +1,4 @@
-use crate::CollectionAllocErr;
+use super::CollectionAllocErr;
 use core::borrow::Borrow;
 use core::fmt;
 use core::hash::{BuildHasher, Hash};

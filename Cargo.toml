@@ -8,3 +8,6 @@ edition = "2018"
 unicode-width = "0.1.5"
 indexmap = "1.0.2"
 random = "0.12.2"
+
+[dev-dependencies]
+rand = "0.6.5"

@@ -1,5 +1,5 @@
-use crate::raw::{Bucket, RawDrain, RawIntoIter, RawIter, RawTable};
-use crate::CollectionAllocErr;
+use super::raw::{Bucket, RawDrain, RawIntoIter, RawIter, RawTable};
+use super::CollectionAllocErr;
 use core::borrow::Borrow;
 use core::fmt::{self, Debug};
 use core::hash::{BuildHasher, Hash, Hasher};
@@ -8,7 +8,7 @@ use core::marker::PhantomData;
 use core::mem;
 use core::ops::Index;
 
-pub use crate::fx::FxHashBuilder as DefaultHashBuilder;
+pub use super::fx::FxHashBuilder as DefaultHashBuilder;
 
 /// A hash map implemented with quadratic probing and SIMD lookup.
 ///
@@ -183,7 +183,6 @@ pub use crate::fx::FxHashBuilder as DefaultHashBuilder;
 ///     // use the values stored in map
 /// }
 /// ```
-
 #[derive(Clone)]
 pub struct HashMap<K, V, S = DefaultHashBuilder> {
     pub(crate) hash_builder: S,
@@ -549,9 +548,9 @@ impl<K, V, S> HashMap<K, V, S> {
 }
 
 impl<K, V, S> HashMap<K, V, S>
-where
-    K: Eq + Hash,
-    S: BuildHasher,
+    where
+        K: Eq + Hash,
+        S: BuildHasher,
 {
     /// Reserves capacity for at least `additional` more elements to be inserted
     /// in the `HashMap`. The collection may reserve more space to avoid
@@ -713,9 +712,9 @@ where
     /// ```
     #[inline]
     pub fn get<Q: ?Sized>(&self, k: &Q) -> Option<&V>
-    where
-        K: Borrow<Q>,
-        Q: Hash + Eq,
+        where
+            K: Borrow<Q>,
+            Q: Hash + Eq,
     {
         self.get_key_value(k).map(|(_, v)| v)
     }
@@ -741,9 +740,9 @@ where
     /// ```
     #[inline]
     pub fn get_key_value<Q: ?Sized>(&self, k: &Q) -> Option<(&K, &V)>
-    where
-        K: Borrow<Q>,
-        Q: Hash + Eq,
+        where
+            K: Borrow<Q>,
+            Q: Hash + Eq,
     {
         let hash = make_hash(&self.hash_builder, k);
         self.table
@@ -775,9 +774,9 @@ where
     /// ```
     #[inline]
     pub fn contains_key<Q: ?Sized>(&self, k: &Q) -> bool
-    where
-        K: Borrow<Q>,
-        Q: Hash + Eq,
+        where
+            K: Borrow<Q>,
+            Q: Hash + Eq,
     {
         self.get(k).is_some()
     }
@@ -805,9 +804,9 @@ where
     /// ```
     #[inline]
     pub fn get_mut<Q: ?Sized>(&mut self, k: &Q) -> Option<&mut V>
-    where
-        K: Borrow<Q>,
-        Q: Hash + Eq,
+        where
+            K: Borrow<Q>,
+            Q: Hash + Eq,
     {
         let hash = make_hash(&self.hash_builder, k);
         self.table
@@ -877,9 +876,9 @@ where
     /// ```
     #[inline]
     pub fn remove<Q: ?Sized>(&mut self, k: &Q) -> Option<V>
-    where
-        K: Borrow<Q>,
-        Q: Hash + Eq,
+        where
+            K: Borrow<Q>,
+            Q: Hash + Eq,
     {
         self.remove_entry(k).map(|(_, v)| v)
     }
@@ -908,9 +907,9 @@ where
     /// ```
     #[inline]
     pub fn remove_entry<Q: ?Sized>(&mut self, k: &Q) -> Option<(K, V)>
-    where
-        K: Borrow<Q>,
-        Q: Hash + Eq,
+        where
+            K: Borrow<Q>,
+            Q: Hash + Eq,
     {
         unsafe {
             let hash = make_hash(&self.hash_builder, &k);
@@ -937,8 +936,8 @@ where
     /// assert_eq!(map.len(), 4);
     /// ```
     pub fn retain<F>(&mut self, mut f: F)
-    where
-        F: FnMut(&K, &mut V) -> bool,
+        where
+            F: FnMut(&K, &mut V) -> bool,
     {
         // Here we only use `iter` as a temporary, preventing use-after-free
         unsafe {
@@ -955,8 +954,8 @@ where
 }
 
 impl<K, V, S> HashMap<K, V, S>
-where
-    S: BuildHasher,
+    where
+        S: BuildHasher,
 {
     /// Creates a raw entry builder for the HashMap.
     ///
@@ -1016,10 +1015,10 @@ where
 }
 
 impl<K, V, S> PartialEq for HashMap<K, V, S>
-where
-    K: Eq + Hash,
-    V: PartialEq,
-    S: BuildHasher,
+    where
+        K: Eq + Hash,
+        V: PartialEq,
+        S: BuildHasher,
 {
     fn eq(&self, other: &Self) -> bool {
         if self.len() != other.len() {
@@ -1032,18 +1031,17 @@ where
 }
 
 impl<K, V, S> Eq for HashMap<K, V, S>
-where
-    K: Eq + Hash,
-    V: Eq,
-    S: BuildHasher,
-{
-}
+    where
+        K: Eq + Hash,
+        V: Eq,
+        S: BuildHasher,
+{}
 
 impl<K, V, S> Debug for HashMap<K, V, S>
-where
-    K: Debug,
-    V: Debug,
-    S: BuildHasher,
+    where
+        K: Debug,
+        V: Debug,
+        S: BuildHasher,
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_map().entries(self.iter()).finish()
@@ -1051,8 +1049,8 @@ where
 }
 
 impl<K, V, S> Default for HashMap<K, V, S>
-where
-    S: BuildHasher + Default,
+    where
+        S: BuildHasher + Default,
 {
     /// Creates an empty `HashMap<K, V, S>`, with the `Default` value for the hasher.
     #[inline]
@@ -1062,10 +1060,10 @@ where
 }
 
 impl<K, Q: ?Sized, V, S> Index<&Q> for HashMap<K, V, S>
-where
-    K: Eq + Hash + Borrow<Q>,
-    Q: Eq + Hash,
-    S: BuildHasher,
+    where
+        K: Eq + Hash + Borrow<Q>,
+        Q: Eq + Hash,
+        S: BuildHasher,
 {
     type Output = V;
 
@@ -1295,16 +1293,16 @@ pub struct RawEntryBuilder<'a, K, V, S> {
 }
 
 impl<'a, K, V, S> RawEntryBuilderMut<'a, K, V, S>
-where
-    S: BuildHasher,
+    where
+        S: BuildHasher,
 {
     /// Creates a `RawEntryMut` from the given key.
     #[inline]
     #[allow(clippy::wrong_self_convention)]
     pub fn from_key<Q: ?Sized>(self, k: &Q) -> RawEntryMut<'a, K, V, S>
-    where
-        K: Borrow<Q>,
-        Q: Hash + Eq,
+        where
+            K: Borrow<Q>,
+            Q: Hash + Eq,
     {
         let mut hasher = self.map.hash_builder.build_hasher();
         k.hash(&mut hasher);
@@ -1315,32 +1313,32 @@ where
     #[inline]
     #[allow(clippy::wrong_self_convention)]
     pub fn from_key_hashed_nocheck<Q: ?Sized>(self, hash: u64, k: &Q) -> RawEntryMut<'a, K, V, S>
-    where
-        K: Borrow<Q>,
-        Q: Eq,
+        where
+            K: Borrow<Q>,
+            Q: Eq,
     {
         self.from_hash(hash, |q| q.borrow().eq(k))
     }
 }
 
 impl<'a, K, V, S> RawEntryBuilderMut<'a, K, V, S>
-where
-    S: BuildHasher,
+    where
+        S: BuildHasher,
 {
     /// Creates a `RawEntryMut` from the given hash.
     #[inline]
     #[allow(clippy::wrong_self_convention)]
     pub fn from_hash<F>(self, hash: u64, is_match: F) -> RawEntryMut<'a, K, V, S>
-    where
-        for<'b> F: FnMut(&'b K) -> bool,
+        where
+                for<'b> F: FnMut(&'b K) -> bool,
     {
         self.search(hash, is_match)
     }
 
     #[inline]
     fn search<F>(self, hash: u64, mut is_match: F) -> RawEntryMut<'a, K, V, S>
-    where
-        for<'b> F: FnMut(&'b K) -> bool,
+        where
+                for<'b> F: FnMut(&'b K) -> bool,
     {
         match self.map.table.find(hash, |(k, _)| is_match(k)) {
             Some(elem) => RawEntryMut::Occupied(RawOccupiedEntryMut {
@@ -1356,16 +1354,16 @@ where
 }
 
 impl<'a, K, V, S> RawEntryBuilder<'a, K, V, S>
-where
-    S: BuildHasher,
+    where
+        S: BuildHasher,
 {
     /// Access an entry by key.
     #[inline]
     #[allow(clippy::wrong_self_convention)]
     pub fn from_key<Q: ?Sized>(self, k: &Q) -> Option<(&'a K, &'a V)>
-    where
-        K: Borrow<Q>,
-        Q: Hash + Eq,
+        where
+            K: Borrow<Q>,
+            Q: Hash + Eq,
     {
         let mut hasher = self.map.hash_builder.build_hasher();
         k.hash(&mut hasher);
@@ -1376,17 +1374,17 @@ where
     #[inline]
     #[allow(clippy::wrong_self_convention)]
     pub fn from_key_hashed_nocheck<Q: ?Sized>(self, hash: u64, k: &Q) -> Option<(&'a K, &'a V)>
-    where
-        K: Borrow<Q>,
-        Q: Hash + Eq,
+        where
+            K: Borrow<Q>,
+            Q: Hash + Eq,
     {
         self.from_hash(hash, |q| q.borrow().eq(k))
     }
 
     #[inline]
     fn search<F>(self, hash: u64, mut is_match: F) -> Option<(&'a K, &'a V)>
-    where
-        F: FnMut(&K) -> bool,
+        where
+            F: FnMut(&K) -> bool,
     {
         self.map
             .table
@@ -1401,8 +1399,8 @@ where
     #[inline]
     #[allow(clippy::wrong_self_convention)]
     pub fn from_hash<F>(self, hash: u64, is_match: F) -> Option<(&'a K, &'a V)>
-    where
-        F: FnMut(&K) -> bool,
+        where
+            F: FnMut(&K) -> bool,
     {
         self.search(hash, is_match)
     }
@@ -1427,9 +1425,9 @@ impl<'a, K, V, S> RawEntryMut<'a, K, V, S> {
     /// ```
     #[inline]
     pub fn or_insert(self, default_key: K, default_val: V) -> (&'a mut K, &'a mut V)
-    where
-        K: Hash,
-        S: BuildHasher,
+        where
+            K: Hash,
+            S: BuildHasher,
     {
         match self {
             RawEntryMut::Occupied(entry) => entry.into_key_value(),
@@ -1455,10 +1453,10 @@ impl<'a, K, V, S> RawEntryMut<'a, K, V, S> {
     /// ```
     #[inline]
     pub fn or_insert_with<F>(self, default: F) -> (&'a mut K, &'a mut V)
-    where
-        F: FnOnce() -> (K, V),
-        K: Hash,
-        S: BuildHasher,
+        where
+            F: FnOnce() -> (K, V),
+            K: Hash,
+            S: BuildHasher,
     {
         match self {
             RawEntryMut::Occupied(entry) => entry.into_key_value(),
@@ -1493,8 +1491,8 @@ impl<'a, K, V, S> RawEntryMut<'a, K, V, S> {
     /// ```
     #[inline]
     pub fn and_modify<F>(self, f: F) -> Self
-    where
-        F: FnOnce(&mut K, &mut V),
+        where
+            F: FnOnce(&mut K, &mut V),
     {
         match self {
             RawEntryMut::Occupied(mut entry) => {
@@ -1609,9 +1607,9 @@ impl<'a, K, V, S> RawVacantEntryMut<'a, K, V, S> {
     /// and returns a mutable reference to it.
     #[inline]
     pub fn insert(self, key: K, value: V) -> (&'a mut K, &'a mut V)
-    where
-        K: Hash,
-        S: BuildHasher,
+        where
+            K: Hash,
+            S: BuildHasher,
     {
         let mut hasher = self.hash_builder.build_hasher();
         key.hash(&mut hasher);
@@ -1623,9 +1621,9 @@ impl<'a, K, V, S> RawVacantEntryMut<'a, K, V, S> {
     #[inline]
     #[allow(clippy::shadow_unrelated)]
     pub fn insert_hashed_nocheck(self, hash: u64, key: K, value: V) -> (&'a mut K, &'a mut V)
-    where
-        K: Hash,
-        S: BuildHasher,
+        where
+            K: Hash,
+            S: BuildHasher,
     {
         let hash_builder = self.hash_builder;
         self.insert_with_hasher(hash, key, value, |k| make_hash(hash_builder, k))
@@ -1640,9 +1638,9 @@ impl<'a, K, V, S> RawVacantEntryMut<'a, K, V, S> {
         value: V,
         hasher: H,
     ) -> (&'a mut K, &'a mut V)
-    where
-        S: BuildHasher,
-        H: Fn(&K) -> u64,
+        where
+            S: BuildHasher,
+            H: Fn(&K) -> u64,
     {
         unsafe {
             let elem = self.table.insert(hash, (key, value), |x| hasher(&x.0));
@@ -1722,19 +1720,18 @@ pub struct OccupiedEntry<'a, K, V, S> {
 }
 
 unsafe impl<K, V, S> Send for OccupiedEntry<'_, K, V, S>
-where
-    K: Send,
-    V: Send,
-    S: Send,
-{
-}
+    where
+        K: Send,
+        V: Send,
+        S: Send,
+{}
+
 unsafe impl<K, V, S> Sync for OccupiedEntry<'_, K, V, S>
-where
-    K: Sync,
-    V: Sync,
-    S: Sync,
-{
-}
+    where
+        K: Sync,
+        V: Sync,
+        S: Sync,
+{}
 
 impl<K: Debug, V: Debug, S> Debug for OccupiedEntry<'_, K, V, S> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -1825,6 +1822,7 @@ impl<'a, K, V> Iterator for Iter<'a, K, V> {
         self.inner.size_hint()
     }
 }
+
 impl<K, V> ExactSizeIterator for Iter<'_, K, V> {
     #[inline]
     fn len(&self) -> usize {
@@ -1849,18 +1847,20 @@ impl<'a, K, V> Iterator for IterMut<'a, K, V> {
         self.inner.size_hint()
     }
 }
+
 impl<K, V> ExactSizeIterator for IterMut<'_, K, V> {
     #[inline]
     fn len(&self) -> usize {
         self.inner.len()
     }
 }
+
 impl<K, V> FusedIterator for IterMut<'_, K, V> {}
 
 impl<K, V> fmt::Debug for IterMut<'_, K, V>
-where
-    K: fmt::Debug,
-    V: fmt::Debug,
+    where
+        K: fmt::Debug,
+        V: fmt::Debug,
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_list().entries(self.iter()).finish()
@@ -1879,12 +1879,14 @@ impl<K, V> Iterator for IntoIter<K, V> {
         self.inner.size_hint()
     }
 }
+
 impl<K, V> ExactSizeIterator for IntoIter<K, V> {
     #[inline]
     fn len(&self) -> usize {
         self.inner.len()
     }
 }
+
 impl<K, V> FusedIterator for IntoIter<K, V> {}
 
 impl<K: Debug, V: Debug> fmt::Debug for IntoIter<K, V> {
@@ -1905,12 +1907,14 @@ impl<'a, K, V> Iterator for Keys<'a, K, V> {
         self.inner.size_hint()
     }
 }
+
 impl<K, V> ExactSizeIterator for Keys<'_, K, V> {
     #[inline]
     fn len(&self) -> usize {
         self.inner.len()
     }
 }
+
 impl<K, V> FusedIterator for Keys<'_, K, V> {}
 
 impl<'a, K, V> Iterator for Values<'a, K, V> {
@@ -1925,12 +1929,14 @@ impl<'a, K, V> Iterator for Values<'a, K, V> {
         self.inner.size_hint()
     }
 }
+
 impl<K, V> ExactSizeIterator for Values<'_, K, V> {
     #[inline]
     fn len(&self) -> usize {
         self.inner.len()
     }
 }
+
 impl<K, V> FusedIterator for Values<'_, K, V> {}
 
 impl<'a, K, V> Iterator for ValuesMut<'a, K, V> {
@@ -1945,18 +1951,20 @@ impl<'a, K, V> Iterator for ValuesMut<'a, K, V> {
         self.inner.size_hint()
     }
 }
+
 impl<K, V> ExactSizeIterator for ValuesMut<'_, K, V> {
     #[inline]
     fn len(&self) -> usize {
         self.inner.len()
     }
 }
+
 impl<K, V> FusedIterator for ValuesMut<'_, K, V> {}
 
 impl<K, V> fmt::Debug for ValuesMut<'_, K, V>
-where
-    K: fmt::Debug,
-    V: fmt::Debug,
+    where
+        K: fmt::Debug,
+        V: fmt::Debug,
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_list().entries(self.inner.iter()).finish()
@@ -1975,18 +1983,20 @@ impl<'a, K, V> Iterator for Drain<'a, K, V> {
         self.inner.size_hint()
     }
 }
+
 impl<K, V> ExactSizeIterator for Drain<'_, K, V> {
     #[inline]
     fn len(&self) -> usize {
         self.inner.len()
     }
 }
+
 impl<K, V> FusedIterator for Drain<'_, K, V> {}
 
 impl<K, V> fmt::Debug for Drain<'_, K, V>
-where
-    K: fmt::Debug,
-    V: fmt::Debug,
+    where
+        K: fmt::Debug,
+        V: fmt::Debug,
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_list().entries(self.iter()).finish()
@@ -2012,9 +2022,9 @@ impl<'a, K, V, S> Entry<'a, K, V, S> {
     /// ```
     #[inline]
     pub fn or_insert(self, default: V) -> &'a mut V
-    where
-        K: Hash,
-        S: BuildHasher,
+        where
+            K: Hash,
+            S: BuildHasher,
     {
         match self {
             Entry::Occupied(entry) => entry.into_mut(),
@@ -2039,9 +2049,9 @@ impl<'a, K, V, S> Entry<'a, K, V, S> {
     /// ```
     #[inline]
     pub fn or_insert_with<F: FnOnce() -> V>(self, default: F) -> &'a mut V
-    where
-        K: Hash,
-        S: BuildHasher,
+        where
+            K: Hash,
+            S: BuildHasher,
     {
         match self {
             Entry::Occupied(entry) => entry.into_mut(),
@@ -2089,8 +2099,8 @@ impl<'a, K, V, S> Entry<'a, K, V, S> {
     /// ```
     #[inline]
     pub fn and_modify<F>(self, f: F) -> Self
-    where
-        F: FnOnce(&mut V),
+        where
+            F: FnOnce(&mut V),
     {
         match self {
             Entry::Occupied(mut entry) => {
@@ -2120,9 +2130,9 @@ impl<'a, K, V: Default, S> Entry<'a, K, V, S> {
     /// ```
     #[inline]
     pub fn or_default(self) -> &'a mut V
-    where
-        K: Hash,
-        S: BuildHasher,
+        where
+            K: Hash,
+            S: BuildHasher,
     {
         match self {
             Entry::Occupied(entry) => entry.into_mut(),
@@ -2415,9 +2425,9 @@ impl<'a, K, V, S> VacantEntry<'a, K, V, S> {
     /// ```
     #[inline]
     pub fn insert(self, value: V) -> &'a mut V
-    where
-        K: Hash,
-        S: BuildHasher,
+        where
+            K: Hash,
+            S: BuildHasher,
     {
         let hash_builder = &self.table.hash_builder;
         let bucket = self.table.table.insert(self.hash, (self.key, value), |x| {
@@ -2428,12 +2438,12 @@ impl<'a, K, V, S> VacantEntry<'a, K, V, S> {
 }
 
 impl<K, V, S> FromIterator<(K, V)> for HashMap<K, V, S>
-where
-    K: Eq + Hash,
-    S: BuildHasher + Default,
+    where
+        K: Eq + Hash,
+        S: BuildHasher + Default,
 {
     #[inline]
-    fn from_iter<T: IntoIterator<Item = (K, V)>>(iter: T) -> Self {
+    fn from_iter<T: IntoIterator<Item=(K, V)>>(iter: T) -> Self {
         let iter = iter.into_iter();
         let mut map = Self::with_capacity_and_hasher(iter.size_hint().0, S::default());
         iter.for_each(|(k, v)| {
@@ -2444,12 +2454,12 @@ where
 }
 
 impl<K, V, S> Extend<(K, V)> for HashMap<K, V, S>
-where
-    K: Eq + Hash,
-    S: BuildHasher,
+    where
+        K: Eq + Hash,
+        S: BuildHasher,
 {
     #[inline]
-    fn extend<T: IntoIterator<Item = (K, V)>>(&mut self, iter: T) {
+    fn extend<T: IntoIterator<Item=(K, V)>>(&mut self, iter: T) {
         // Keys may be already present or show multiple times in the iterator.
         // Reserve the entire hint lower bound if the map is empty.
         // Otherwise reserve half the hint (rounded up), so the map
@@ -2468,13 +2478,13 @@ where
 }
 
 impl<'a, K, V, S> Extend<(&'a K, &'a V)> for HashMap<K, V, S>
-where
-    K: Eq + Hash + Copy,
-    V: Copy,
-    S: BuildHasher,
+    where
+        K: Eq + Hash + Copy,
+        V: Copy,
+        S: BuildHasher,
 {
     #[inline]
-    fn extend<T: IntoIterator<Item = (&'a K, &'a V)>>(&mut self, iter: T) {
+    fn extend<T: IntoIterator<Item=(&'a K, &'a V)>>(&mut self, iter: T) {
         self.extend(iter.into_iter().map(|(&key, &value)| (key, value)));
     }
 }
@@ -2524,7 +2534,7 @@ mod test_map {
     use super::Entry::{Occupied, Vacant};
     use super::{HashMap, RawEntryMut};
     #[cfg(not(miri))]
-    use crate::CollectionAllocErr::*;
+    use super::CollectionAllocErr::*;
     use rand::{rngs::SmallRng, Rng, SeedableRng};
     use std::cell::RefCell;
     use std::usize;
@@ -3266,7 +3276,7 @@ mod test_map {
     #[test]
     fn test_entry_take_doesnt_corrupt() {
         #![allow(deprecated)] //rand
-                              // Test for #19292
+        // Test for #19292
         fn check(m: &HashMap<i32, ()>) {
             for k in m.keys() {
                 assert!(m.contains_key(k), "{} is in keys() but not in the map?", k);
@@ -3395,18 +3405,15 @@ mod test_map {
 
         const MAX_USIZE: usize = usize::MAX;
 
-        if let Err(CapacityOverflow) = empty_bytes.try_reserve(MAX_USIZE) {
-        } else {
+        if let Err(CapacityOverflow) = empty_bytes.try_reserve(MAX_USIZE) {} else {
             panic!("usize::MAX should trigger an overflow!");
         }
 
-        if let Err(AllocErr) = empty_bytes.try_reserve(MAX_USIZE / 8) {
-        } else {
+        if let Err(AllocErr) = empty_bytes.try_reserve(MAX_USIZE / 8) {} else {
             // This may succeed if there is enough free memory. Attempt to
             // allocate a second hashmap to ensure the allocation will fail.
             let mut empty_bytes2: HashMap<u8, u8> = HashMap::new();
-            if let Err(AllocErr) = empty_bytes2.try_reserve(MAX_USIZE / 8) {
-            } else {
+            if let Err(AllocErr) = empty_bytes2.try_reserve(MAX_USIZE / 8) {} else {
                 panic!("usize::MAX / 8 should trigger an OOM!");
             }
         }
