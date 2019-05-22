@@ -13,6 +13,7 @@ impl BinTreeType for BinSearchTreeType {
 type Link<T> = CommonLink<T, BinSearchTreeType>;
 type Node<T> = CommonNode<T, BinSearchTreeType>;
 
+#[derive(Debug, Clone, Default)]
 pub struct BinSearchTree<T>
     where T: Ord {
     pub root: Link<T>
@@ -117,13 +118,8 @@ impl<T> Node<T>
         else if self.left.is_some() && self.right.is_some() {
             // Two children
             let mut min_node_parent = unbox_link_mut(&mut self.right).unwrap(); // checked before
-            loop {
-                if let Some(left) = unbox_link(&min_node_parent.left) {
-                    if !left.has_child() {
-                        break;
-                    }
-                } else {
-                    // this only happens in first time if the self.right doesn't have the left subtree
+            while let Some(left) = unbox_link(&min_node_parent.left) {
+                if !left.has_child() {
                     break;
                 }
                 min_node_parent = unbox_link_mut(&mut min_node_parent.left).unwrap(); // will never panic

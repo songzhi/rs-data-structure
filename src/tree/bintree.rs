@@ -27,7 +27,7 @@ pub struct Node<T, Ty = BasicBinTreeType>
     _ty: PhantomData<Ty>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct BinTree<T> {
     root: Link<T>
 }
@@ -40,16 +40,24 @@ impl<T> BinTree<T> {
     }
 
     pub fn traverse_pre(&self, mut visit: impl FnMut(&T)) {
-        self.root.as_ref().map(|n| n.traverse_pre(&mut visit));
+        if let Some(tree) = self.root.as_ref() {
+            tree.traverse_pre(&mut visit);
+        }
     }
     pub fn traverse_in(&self, mut visit: impl FnMut(&T)) {
-        self.root.as_ref().map(|n| n.traverse_in(&mut visit));
+        if let Some(tree) = self.root.as_ref() {
+            tree.traverse_in(&mut visit);
+        }
     }
     pub fn traverse_post(&self, mut visit: impl FnMut(&T)) {
-        self.root.as_ref().map(|n| n.traverse_post(&mut visit));
+        if let Some(tree) = self.root.as_ref() {
+            tree.traverse_post(&mut visit);
+        }
     }
     pub fn traverse_level(&self, mut visit: impl FnMut(&T)) {
-        self.root.as_ref().map(|n| n.traverse_level(&mut visit));
+        if let Some(tree) = self.root.as_ref() {
+            tree.traverse_level(&mut visit);
+        }
     }
     pub fn from_post_expr(tokens: impl Iterator<Item=T>, is_operator: impl Fn(&T) -> bool) -> Self {
         Self {
@@ -112,17 +120,29 @@ impl<T, Ty> Node<T, Ty>
     }
     pub fn traverse_pre(&self, visit: &mut impl FnMut(&T)) {
         visit(&self.elem);
-        self.left.as_ref().map(|n| n.traverse_pre(visit));
-        self.right.as_ref().map(|n| n.traverse_pre(visit));
+        if let Some(tree) = self.left.as_ref() {
+            tree.traverse_pre(visit);
+        }
+        if let Some(tree) = self.right.as_ref() {
+            tree.traverse_pre(visit);
+        }
     }
     pub fn traverse_in(&self, visit: &mut impl FnMut(&T)) {
-        self.left.as_ref().map(|n| n.traverse_in(visit));
+        if let Some(tree) = self.left.as_ref() {
+            tree.traverse_in(visit);
+        }
         visit(&self.elem);
-        self.right.as_ref().map(|n| n.traverse_in(visit));
+        if let Some(tree) = self.right.as_ref() {
+            tree.traverse_in(visit);
+        }
     }
     pub fn traverse_post(&self, visit: &mut impl FnMut(&T)) {
-        self.left.as_ref().map(|n| n.traverse_post(visit));
-        self.right.as_ref().map(|n| n.traverse_post(visit));
+        if let Some(tree) = self.left.as_ref() {
+            tree.traverse_post(visit);
+        }
+        if let Some(tree) = self.right.as_ref() {
+            tree.traverse_post(visit);
+        }
         visit(&self.elem);
     }
     pub fn traverse_level(&self, visit: &mut impl FnMut(&T)) {
@@ -130,8 +150,12 @@ impl<T, Ty> Node<T, Ty>
         que.push_back(self);
         while let Some(node) = que.pop_front() {
             visit(&node.elem);
-            node.left.as_ref().map(|n| que.push_back(&*n));
-            node.right.as_ref().map(|n| que.push_back(&*n));
+            if let Some(node) = self.left.as_ref() {
+                que.push_back(&*node);
+            }
+            if let Some(node) = self.right.as_ref() {
+                que.push_back(&*node);
+            }
         }
     }
     pub fn from_post_expr(tokens: impl Iterator<Item=T>, is_operator: impl Fn(&T) -> bool) -> Link<T, Ty> {
@@ -285,7 +309,7 @@ mod test {
     #[test]
     fn from_seq_pre() {
         let seq = "ABC##DE#G##F###";
-        let tree = BinTree::from_seq_pre(seq.chars().into_iter(), &'#');
+        let tree = BinTree::from_seq_pre(seq.chars(), &'#');
         let mut seq = String::new();
         tree.traverse_pre(|ch| seq.push(*ch));
         assert_eq!(seq, "ABCDEGF");
@@ -295,7 +319,7 @@ mod test {
     fn from_post_expr() {
         let tokens = "ab+cde+**";
         let is_operator = |token: &char| "+-*/".contains(*token);
-        let tree = BinTree::from_post_expr(tokens.chars().into_iter(), is_operator);
+        let tree = BinTree::from_post_expr(tokens.chars(), is_operator);
 
         let mut seq = String::new();
         tree.traverse_in(|ch| seq.push(*ch));
@@ -305,14 +329,14 @@ mod test {
     #[test]
     fn depth() {
         let seq = "ABC##DE#G##F###";
-        let tree = BinTree::from_seq_pre(seq.chars().into_iter(), &'#');
+        let tree = BinTree::from_seq_pre(seq.chars(), &'#');
         assert_eq!(5, tree.depth());
     }
 
     #[test]
     fn traverse_level() {
         let seq = "ABC##DE#G##F###";
-        let tree = BinTree::from_seq_pre(seq.chars().into_iter(), &'#');
+        let tree = BinTree::from_seq_pre(seq.chars(), &'#');
         let mut seq = String::new();
         tree.traverse_level(|ch| seq.push(*ch));
         assert_eq!(seq, "ABCDEFG");

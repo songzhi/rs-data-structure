@@ -105,6 +105,7 @@ impl Maze {
     pub fn len(&self) -> usize {
         self.layout.len()
     }
+    pub fn is_empty(&self) -> bool { self.len() == 0 }
     pub fn is_in_edge(&self, (x, y): (usize, usize)) -> bool {
         x == 0 || x == self.len() || y == 0 || y == self.len()
     }

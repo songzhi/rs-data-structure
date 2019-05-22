@@ -70,7 +70,7 @@ pub fn color_it(map: Vec<Vec<bool>>) -> Vec<(usize, Color)> {
             }
         }
         if let Some((next_color, _)) = neighbor_colored.iter()
-            .enumerate().filter(|&(_, c)| !*c).next() {
+            .enumerate().find(|&(_, c)| !*c) {
             colored.insert(i, next_color);
             stack.push(i);
             i += 1;
