@@ -1,6 +1,5 @@
 use std::rc::Rc;
 use bitvec::prelude::BitVec;
-use core::borrow::Borrow;
 
 type Link<T> = Option<Box<Node<T>>>;
 
@@ -40,7 +39,7 @@ pub struct HuffmanTree<T> {
 }
 
 impl<'a, T: Eq + 'a> HuffmanTree<T> {
-    pub fn new(mut leaves: Vec<(T, usize)>) -> Self {
+    pub fn new(leaves: Vec<(T, usize)>) -> Self {
         let mut nodes: Vec<Box<Node<T>>> = leaves.into_iter()
             .map(|(symbol, weight)| Box::new(Node::new_leaf(Rc::new(symbol), weight)))
             .collect();
@@ -98,7 +97,6 @@ impl<'a, T: Eq + 'a> HuffmanTree<T> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use bitvec::prelude::bitvec;
 
     #[test]
     fn test_basic() {

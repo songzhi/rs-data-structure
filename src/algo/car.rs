@@ -112,7 +112,7 @@ impl ParkingLot {
     /// line1: Enter(12) 京B8888
     /// line2: Leave(13) 京B8888
     pub fn parse_line(&mut self, line: &str) -> Result<(), ()> {
-        let mut split = line.split(" ");
+        let mut split = line.split(' ');
         let action = Action::from_str(split.next().ok_or(())?)?;
         let plate_number = split.next().ok_or(())?;
         match action {

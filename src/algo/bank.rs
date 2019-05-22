@@ -101,10 +101,8 @@ impl Bank {
     }
     pub fn served(&mut self, client_number: usize) -> Option<Service> {
         let mut service = None;
-        if let Some(window) = self.windows.iter_mut()
-            .filter(|window|
-                window.0.map_or(false, |service| service.get_client_number() == client_number))
-            .next() {
+        if let Some(window) = self.windows.iter_mut().find(|window|
+                window.0.map_or(false, |service| service.get_client_number() == client_number)) {
             service = window.clear();
             if let Some(to_serve) = self.to_serve.pop() {
                 self.serve(to_serve);

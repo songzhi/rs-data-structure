@@ -164,7 +164,7 @@ impl<T: PartialEq, Ty> Node<T, Ty>
     pub fn from_seq_pre(seq_itr: &mut impl Iterator<Item=T>, null_val: &T) -> Link<T, Ty> {
         let elem = seq_itr.next()?;
         if elem == *null_val {
-            return None;
+            None
         } else {
             let mut tree = Box::new(Node::new(elem));
             tree.left = Self::from_seq_pre(seq_itr, null_val);
@@ -175,7 +175,7 @@ impl<T: PartialEq, Ty> Node<T, Ty>
     pub fn from_seq_in(seq_itr: &mut impl Iterator<Item=T>, null_val: &T) -> Link<T, Ty> {
         let elem = seq_itr.next()?;
         if elem == *null_val {
-            return None;
+            None
         } else {
             let left = Self::from_seq_pre(seq_itr, null_val);
             let mut tree = Box::new(Node::new(elem));
@@ -187,7 +187,7 @@ impl<T: PartialEq, Ty> Node<T, Ty>
     pub fn from_seq_post(seq_itr: &mut impl Iterator<Item=T>, null_val: &T) -> Link<T, Ty> {
         let elem = seq_itr.next()?;
         if elem == *null_val {
-            return None;
+            None
         } else {
             let left = Self::from_seq_pre(seq_itr, null_val);
             let right = Self::from_seq_pre(seq_itr, null_val);
