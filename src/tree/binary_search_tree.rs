@@ -1,4 +1,4 @@
-use super::bintree::{Node as CommonNode, Link as CommonLink, BinaryTreeType, BinaryTree};
+use super::binary_tree::{Node as CommonNode, Link as CommonLink, BinaryTreeType, BinaryTree};
 
 
 #[derive(Copy, Clone, Debug)]
