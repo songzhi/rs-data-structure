@@ -2,7 +2,7 @@
 
 A lot of code is copied or inspired from other crate or rust std.
 
-###Code Structure
+### Code Structure
 * algo
     * sort: almost all main sort algorithms' implementation
     * string
