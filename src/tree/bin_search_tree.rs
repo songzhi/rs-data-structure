@@ -13,13 +13,12 @@ type Node<T> = CommonNode<T, BinarySearchTreeType>;
 pub type BinarySearchTree<T> = BinaryTree<T, BinarySearchTreeType>;
 
 
-impl<T> BinarySearchTree<T>
-    where T: Ord {
+impl<T: Ord> BinarySearchTree<T> {
     pub fn clear(&mut self) -> Link<T> {
         self.root.take()
     }
     pub fn find(&self, elem: T) -> Option<&Node<T>> {
-        unbox_link(&self.root)?.find(elem)
+        unbox_link(&self.root)?.find(&elem)
     }
     pub fn find_min(&self) -> Option<&Node<T>> {
         Some(self.root.as_ref()?.find_min())
@@ -41,31 +40,8 @@ impl<T> BinarySearchTree<T>
     }
 }
 
-impl<T> Node<T>
-    where T: Ord {
-    fn find(&self, elem: T) -> Option<&Node<T>> {
-        if elem < self.elem {
-            unbox_link(&self.left)?.find(elem)
-        } else if elem > self.elem {
-            unbox_link(&self.right)?.find(elem)
-        } else {
-            Some(self)
-        }
-    }
-    fn find_min(&self) -> &Node<T> {
-        let mut node = self;
-        while let Some(left) = unbox_link(&node.left) {
-            node = left;
-        }
-        node
-    }
-    fn find_max(&self) -> &Node<T> {
-        let mut node = self;
-        while let Some(right) = unbox_link(&node.right) {
-            node = right;
-        }
-        node
-    }
+impl<T: Ord> Node<T> {
+
     fn insert(&mut self, elem: T) {
         if elem < self.elem {
             if let Some(left) = self.left.as_mut() {

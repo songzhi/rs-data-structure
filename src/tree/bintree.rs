@@ -4,6 +4,7 @@ use core::fmt;
 use core::fmt::Display;
 use crate::utils::width_in_fmt;
 use std::marker::PhantomData;
+use std::any::Any;
 
 pub type Link<T, Ty = BasicBinaryTreeType> = Option<Box<Node<T, Ty>>>;
 
@@ -102,6 +103,91 @@ impl<T: Display, Ty> Display for BinaryTree<T, Ty> where Ty: BinaryTreeType {
     }
 }
 
+#[inline]
+fn unbox_link<T, Ty: BinaryTreeType>(link: &Link<T, Ty>) -> Option<&Node<T, Ty>> {
+    link.as_ref().map(|node| &**node)
+}
+
+impl<T: Ord, Ty> Node<T, Ty>
+    where Ty: BinaryTreeType {
+    pub fn find(&self, elem: &T) -> Option<&Node<T, Ty>> {
+        if self.is_searchable() {
+            if *elem < self.elem {
+                unbox_link(&self.left)?.find(elem)
+            } else if *elem > self.elem {
+                unbox_link(&self.right)?.find(elem)
+            } else {
+                Some(self)
+            }
+        } else {
+            let mut que = VecDeque::new();
+            que.push_back(self);
+            while let Some(node) = que.pop_front() {
+                if node.elem == *elem {
+                    return Some(node);
+                }
+                if let Some(node) = self.left.as_ref() {
+                    que.push_back(&*node);
+                }
+                if let Some(node) = self.right.as_ref() {
+                    que.push_back(&*node);
+                }
+            }
+            None
+        }
+    }
+    pub fn find_min(&self) -> &Node<T, Ty> {
+        if self.is_searchable() {
+            let mut node = self;
+            while let Some(left) = unbox_link(&node.left) {
+                node = left;
+            }
+            node
+        } else {
+            let mut min_node = self;
+            let mut que = VecDeque::new();
+            que.push_back(self);
+            while let Some(node) = que.pop_front() {
+                if node.elem < min_node.elem {
+                    min_node = node;
+                }
+                if let Some(node) = self.left.as_ref() {
+                    que.push_back(&*node);
+                }
+                if let Some(node) = self.right.as_ref() {
+                    que.push_back(&*node);
+                }
+            }
+            min_node
+        }
+    }
+    pub fn find_max(&self) -> &Node<T, Ty> {
+        if self.is_searchable() {
+            let mut node = self;
+            while let Some(right) = unbox_link(&node.right) {
+                node = right;
+            }
+            node
+        } else {
+            let mut max_node = self;
+            let mut que = VecDeque::new();
+            que.push_back(self);
+            while let Some(node) = que.pop_front() {
+                if node.elem > max_node.elem {
+                    max_node = node;
+                }
+                if let Some(node) = self.left.as_ref() {
+                    que.push_back(&*node);
+                }
+                if let Some(node) = self.right.as_ref() {
+                    que.push_back(&*node);
+                }
+            }
+            max_node
+        }
+    }
+}
+
 impl<T, Ty> Node<T, Ty>
     where Ty: BinaryTreeType {
     pub fn new(elem: T) -> Self {
@@ -177,16 +263,23 @@ impl<T, Ty> Node<T, Ty>
         }
         stack.pop()
     }
+    #[inline]
     pub fn depth(&self) -> usize { self.height }
     pub(crate) fn calc_height(left: &Link<T, Ty>, right: &Link<T, Ty>) -> usize {
         let left_height = left.as_ref().map(|m| m.height).unwrap_or(0);
         let right_height = right.as_ref().map(|m| m.height).unwrap_or(0);
         max(left_height, right_height) + 1
     }
+    #[inline]
     pub fn height(&self) -> usize { self.height }
+    #[inline]
     pub fn has_child(&self) -> bool {
         self.left.is_some() || self.right.is_some()
     }
+    #[inline]
+    pub fn is_searchable(&self) -> bool { Ty::is_searchable() }
+    #[inline]
+    pub fn is_avl(&self) -> bool { Ty::is_avl() }
 }
 
 impl<T: PartialEq, Ty> Node<T, Ty>
