@@ -24,6 +24,7 @@ pub struct Node<T, Ty = BasicBinTreeType>
     pub elem: T,
     pub left: Link<T, Ty>,
     pub right: Link<T, Ty>,
+    pub(crate) height: usize,
     _ty: PhantomData<Ty>,
 }
 
@@ -70,6 +71,7 @@ impl<T> BinTree<T> {
     pub fn is_empty(&self) -> bool {
         self.root.is_none()
     }
+    pub fn height(&self) -> usize { self.root.as_ref().map(|n| n.height()).unwrap_or(0) }
 }
 
 impl<T: PartialEq> BinTree<T> {
@@ -107,12 +109,14 @@ impl<T, Ty> Node<T, Ty>
             elem,
             left: None,
             right: None,
+            height: 1,
             _ty: PhantomData,
         }
     }
     pub fn with_children(elem: T, left: Link<T, Ty>, right: Link<T, Ty>) -> Self {
         Self {
             elem,
+            height: Self::calc_height(&left, &right),
             left,
             right,
             _ty: PhantomData,
@@ -173,11 +177,13 @@ impl<T, Ty> Node<T, Ty>
         }
         stack.pop()
     }
-    pub fn depth(&self) -> usize {
-        let l_depth = self.left.as_ref().map(|node| node.depth()).unwrap_or(0);
-        let r_depth = self.right.as_ref().map(|node| node.depth()).unwrap_or(0);
-        max(l_depth, r_depth) + 1
+    pub fn depth(&self) -> usize { self.height }
+    pub(crate) fn calc_height(left: &Link<T, Ty>, right: &Link<T, Ty>) -> usize {
+        let left_height = left.as_ref().map(|m| m.height).unwrap_or(0);
+        let right_height = right.as_ref().map(|m| m.height).unwrap_or(0);
+        max(left_height, right_height) + 1
     }
+    pub fn height(&self) -> usize { self.height }
     pub fn has_child(&self) -> bool {
         self.left.is_some() || self.right.is_some()
     }
@@ -193,6 +199,7 @@ impl<T: PartialEq, Ty> Node<T, Ty>
             let mut tree = Box::new(Node::new(elem));
             tree.left = Self::from_seq_pre(seq_itr, null_val);
             tree.right = Self::from_seq_pre(seq_itr, null_val);
+            tree.height = Self::calc_height(&tree.left, &tree.right);
             Some(tree)
         }
     }
@@ -205,6 +212,7 @@ impl<T: PartialEq, Ty> Node<T, Ty>
             let mut tree = Box::new(Node::new(elem));
             tree.left = left;
             tree.right = Self::from_seq_pre(seq_itr, null_val);
+            tree.height = Self::calc_height(&tree.left, &tree.right);
             Some(tree)
         }
     }

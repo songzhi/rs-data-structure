@@ -53,7 +53,33 @@ impl<T> BinSearchTree<T>
         self.root = root.and_then(|n| n.delete(elem))
             .and_then(|n| Some(Box::new(n)));
     }
+
+    pub fn traverse_pre(&self, mut visit: impl FnMut(&T)) {
+        if let Some(tree) = self.root.as_ref() {
+            tree.traverse_pre(&mut visit);
+        }
+    }
+    pub fn traverse_in(&self, mut visit: impl FnMut(&T)) {
+        if let Some(tree) = self.root.as_ref() {
+            tree.traverse_in(&mut visit);
+        }
+    }
+    pub fn traverse_post(&self, mut visit: impl FnMut(&T)) {
+        if let Some(tree) = self.root.as_ref() {
+            tree.traverse_post(&mut visit);
+        }
+    }
+    pub fn traverse_level(&self, mut visit: impl FnMut(&T)) {
+        if let Some(tree) = self.root.as_ref() {
+            tree.traverse_level(&mut visit);
+        }
+    }
+    pub fn height(&self) -> usize { self.root.as_ref().map(|n| n.height()).unwrap_or(0) }
+    pub fn depth(&self) -> usize {
+        self.root.as_ref().map(|n| n.depth()).unwrap_or(0)
+    }
 }
+
 
 impl<T> Display for BinSearchTree<T>
     where T: Display + Ord {
@@ -105,6 +131,7 @@ impl<T> Node<T>
                 self.right = Some(Box::new(Node::new(elem)));
             }
         } // Else elem is in the tree already; we'll do nothing
+        self.height = Self::calc_height(&self.left, &self.right);
     }
 
     fn delete(mut self, elem: T) -> Option<Self> {
@@ -139,13 +166,20 @@ impl<T> Node<T>
             // One or zero child
             let mut res: Option<Node<T>> = None;
             if self.left.is_none() {
-                res = self.right.take().map(|n| *n);
+                res = self.right.take().map(|mut n| {
+                    n.height = Self::calc_height(&n.left, &n.right);
+                    *n
+                });
             }
             if self.right.is_none() {
-                res = self.left.take().map(|n| *n);
+                res = self.left.take().map(|mut n| {
+                    n.height = Self::calc_height(&n.left, &n.right);
+                    *n
+                });
             }
             return res;
         }
+        self.height = Self::calc_height(&self.left, &self.right);
         Some(self)
     }
 }
@@ -178,6 +212,19 @@ mod test {
         assert_eq!(false, tree.is_empty());
         assert_eq!(1, tree.root.as_ref().unwrap().elem);
         assert_eq!(2, tree.root.as_ref().unwrap().right.as_ref().unwrap().elem);
+    }
+
+    #[test]
+    fn height() {
+        let mut tree = BinSearchTree::new();
+        tree.insert(5);
+        tree.insert(1);
+        tree.insert(2);
+        tree.delete(1);
+        tree.insert(8);
+        tree.insert(10);
+
+        assert_eq!(tree.height(), 3);
     }
 
     #[test]
