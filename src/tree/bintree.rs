@@ -5,22 +5,22 @@ use core::fmt::Display;
 use crate::utils::width_in_fmt;
 use std::marker::PhantomData;
 
-pub type Link<T, Ty = BasicBinTreeType> = Option<Box<Node<T, Ty>>>;
+pub type Link<T, Ty = BasicBinaryTreeType> = Option<Box<Node<T, Ty>>>;
 
-pub trait BinTreeType {
+pub trait BinaryTreeType {
     fn is_searchable() -> bool { false }
     fn is_avl() -> bool { false }
 }
 
 #[derive(Copy, Clone, Debug)]
-pub struct BasicBinTreeType {}
+pub struct BasicBinaryTreeType {}
 
-impl BinTreeType for BasicBinTreeType {}
+impl BinaryTreeType for BasicBinaryTreeType {}
 
 
 #[derive(Debug, Clone)]
-pub struct Node<T, Ty = BasicBinTreeType>
-    where Ty: BinTreeType {
+pub struct Node<T, Ty = BasicBinaryTreeType>
+    where Ty: BinaryTreeType {
     pub elem: T,
     pub left: Link<T, Ty>,
     pub right: Link<T, Ty>,
@@ -29,11 +29,11 @@ pub struct Node<T, Ty = BasicBinTreeType>
 }
 
 #[derive(Debug, Clone, Default)]
-pub struct BinTree<T> {
-    root: Link<T>
+pub struct BinaryTree<T, Ty = BasicBinaryTreeType> where Ty: BinaryTreeType {
+    pub(crate) root: Link<T, Ty>
 }
 
-impl<T> BinTree<T> {
+impl<T, Ty> BinaryTree<T, Ty> where Ty: BinaryTreeType {
     pub fn new() -> Self {
         Self {
             root: None
@@ -74,7 +74,7 @@ impl<T> BinTree<T> {
     pub fn height(&self) -> usize { self.root.as_ref().map(|n| n.height()).unwrap_or(0) }
 }
 
-impl<T: PartialEq> BinTree<T> {
+impl<T: PartialEq> BinaryTree<T, BasicBinaryTreeType> {
     pub fn from_seq_pre(mut seq_itr: impl Iterator<Item=T>, null_val: &T) -> Self {
         Self {
             root: Node::from_seq_pre(&mut seq_itr, null_val)
@@ -92,7 +92,7 @@ impl<T: PartialEq> BinTree<T> {
     }
 }
 
-impl<T: Display> Display for BinTree<T> {
+impl<T: Display, Ty> Display for BinaryTree<T, Ty> where Ty: BinaryTreeType {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         if let Some(ref node) = self.root {
             node.fmt(f)
@@ -103,7 +103,7 @@ impl<T: Display> Display for BinTree<T> {
 }
 
 impl<T, Ty> Node<T, Ty>
-    where Ty: BinTreeType {
+    where Ty: BinaryTreeType {
     pub fn new(elem: T) -> Self {
         Self {
             elem,
@@ -190,7 +190,7 @@ impl<T, Ty> Node<T, Ty>
 }
 
 impl<T: PartialEq, Ty> Node<T, Ty>
-    where Ty: BinTreeType {
+    where Ty: BinaryTreeType {
     pub fn from_seq_pre(seq_itr: &mut impl Iterator<Item=T>, null_val: &T) -> Link<T, Ty> {
         let elem = seq_itr.next()?;
         if elem == *null_val {
@@ -233,10 +233,10 @@ impl<T: PartialEq, Ty> Node<T, Ty>
 
 
 impl<T: Display, Ty> Display for Node<T, Ty>
-    where Ty: BinTreeType {
+    where Ty: BinaryTreeType {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         fn fill_map<'a, T, Ty>(map: &mut Vec<Option<&'a Node<T, Ty>>>, node: &'a Node<T, Ty>, index: usize)
-            where Ty: BinTreeType {
+            where Ty: BinaryTreeType {
             map[index] = Some(node);
             if let Some(ref left) = node.left {
                 fill_map(map, &*left, index * 2 + 1);
@@ -312,12 +312,12 @@ impl<T: Display, Ty> Display for Node<T, Ty>
 
 #[cfg(test)]
 mod test {
-    use super::BinTree;
+    use super::BinaryTree;
 
     #[test]
     fn from_seq_pre() {
         let seq = "ABC##DE#G##F###";
-        let tree = BinTree::from_seq_pre(seq.chars(), &'#');
+        let tree = BinaryTree::from_seq_pre(seq.chars(), &'#');
         let mut seq = String::new();
         tree.traverse_pre(|ch| seq.push(*ch));
         assert_eq!(seq, "ABCDEGF");
@@ -327,7 +327,7 @@ mod test {
     fn from_post_expr() {
         let tokens = "ab+cde+**";
         let is_operator = |token: &char| "+-*/".contains(*token);
-        let tree = BinTree::from_post_expr(tokens.chars(), is_operator);
+        let tree = BinaryTree::<char>::from_post_expr(tokens.chars(), is_operator);
 
         let mut seq = String::new();
         tree.traverse_in(|ch| seq.push(*ch));
@@ -337,14 +337,14 @@ mod test {
     #[test]
     fn depth() {
         let seq = "ABC##DE#G##F###";
-        let tree = BinTree::from_seq_pre(seq.chars(), &'#');
+        let tree = BinaryTree::from_seq_pre(seq.chars(), &'#');
         assert_eq!(5, tree.depth());
     }
 
     #[test]
     fn traverse_level() {
         let seq = "ABC##DE#G##F###";
-        let tree = BinTree::from_seq_pre(seq.chars(), &'#');
+        let tree = BinaryTree::from_seq_pre(seq.chars(), &'#');
         let mut seq = String::new();
         tree.traverse_level(|ch| seq.push(*ch));
         assert_eq!(seq, "ABCDEFG");

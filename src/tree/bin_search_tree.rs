@@ -1,36 +1,22 @@
-use super::bintree::{Node as CommonNode, Link as CommonLink, BinTreeType};
-use std::fmt::Display;
-use std::fmt;
+use super::bintree::{Node as CommonNode, Link as CommonLink, BinaryTreeType, BinaryTree};
 
 
 #[derive(Copy, Clone, Debug)]
-pub struct BinSearchTreeType {}
+pub struct BinarySearchTreeType {}
 
-impl BinTreeType for BinSearchTreeType {
+impl BinaryTreeType for BinarySearchTreeType {
     fn is_searchable() -> bool { true }
 }
 
-type Link<T> = CommonLink<T, BinSearchTreeType>;
-type Node<T> = CommonNode<T, BinSearchTreeType>;
+type Link<T> = CommonLink<T, BinarySearchTreeType>;
+type Node<T> = CommonNode<T, BinarySearchTreeType>;
+pub type BinarySearchTree<T> = BinaryTree<T, BinarySearchTreeType>;
 
-#[derive(Debug, Clone, Default)]
-pub struct BinSearchTree<T>
-    where T: Ord {
-    pub root: Link<T>
-}
 
-impl<T> BinSearchTree<T>
+impl<T> BinarySearchTree<T>
     where T: Ord {
-    pub fn new() -> Self {
-        Self {
-            root: None
-        }
-    }
-    pub fn clear(&mut self) {
-        self.root.take();
-    }
-    pub fn is_empty(&self) -> bool {
-        self.root.is_none()
+    pub fn clear(&mut self) -> Link<T> {
+        self.root.take()
     }
     pub fn find(&self, elem: T) -> Option<&Node<T>> {
         unbox_link(&self.root)?.find(elem)
@@ -52,43 +38,6 @@ impl<T> BinSearchTree<T>
         let root = self.root.take();
         self.root = root.and_then(|n| n.delete(elem))
             .and_then(|n| Some(Box::new(n)));
-    }
-
-    pub fn traverse_pre(&self, mut visit: impl FnMut(&T)) {
-        if let Some(tree) = self.root.as_ref() {
-            tree.traverse_pre(&mut visit);
-        }
-    }
-    pub fn traverse_in(&self, mut visit: impl FnMut(&T)) {
-        if let Some(tree) = self.root.as_ref() {
-            tree.traverse_in(&mut visit);
-        }
-    }
-    pub fn traverse_post(&self, mut visit: impl FnMut(&T)) {
-        if let Some(tree) = self.root.as_ref() {
-            tree.traverse_post(&mut visit);
-        }
-    }
-    pub fn traverse_level(&self, mut visit: impl FnMut(&T)) {
-        if let Some(tree) = self.root.as_ref() {
-            tree.traverse_level(&mut visit);
-        }
-    }
-    pub fn height(&self) -> usize { self.root.as_ref().map(|n| n.height()).unwrap_or(0) }
-    pub fn depth(&self) -> usize {
-        self.root.as_ref().map(|n| n.depth()).unwrap_or(0)
-    }
-}
-
-
-impl<T> Display for BinSearchTree<T>
-    where T: Display + Ord {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        if let Some(ref node) = self.root {
-            node.fmt(f)
-        } else {
-            writeln!(f, "Empty Binary Search Tree")
-        }
     }
 }
 
@@ -196,17 +145,17 @@ fn unbox_link_mut<T>(link: &mut Link<T>) -> Option<&mut Node<T>> {
 
 #[cfg(test)]
 mod test {
-    use super::BinSearchTree;
+    use super::BinarySearchTree;
 
     #[test]
     fn basics() {
-        let tree: BinSearchTree<i32> = BinSearchTree::new();
+        let tree: BinarySearchTree<i32> = BinarySearchTree::new();
         assert_eq!(true, tree.is_empty());
     }
 
     #[test]
     fn insert() {
-        let mut tree = BinSearchTree::new();
+        let mut tree = BinarySearchTree::new();
         tree.insert(1);
         tree.insert(2);
         assert_eq!(false, tree.is_empty());
@@ -216,7 +165,7 @@ mod test {
 
     #[test]
     fn height() {
-        let mut tree = BinSearchTree::new();
+        let mut tree = BinarySearchTree::new();
         tree.insert(5);
         tree.insert(1);
         tree.insert(2);
@@ -229,7 +178,7 @@ mod test {
 
     #[test]
     fn find() {
-        let mut tree = BinSearchTree::new();
+        let mut tree = BinarySearchTree::new();
         tree.insert(1);
         tree.insert(2);
         assert_eq!(true, tree.find(1).is_some());
@@ -238,7 +187,7 @@ mod test {
 
     #[test]
     fn find_min() {
-        let mut tree = BinSearchTree::new();
+        let mut tree = BinarySearchTree::new();
         tree.insert(5);
         tree.insert(2);
         tree.insert(3);
@@ -248,7 +197,7 @@ mod test {
 
     #[test]
     fn find_max() {
-        let mut tree = BinSearchTree::new();
+        let mut tree = BinarySearchTree::new();
         tree.insert(5);
         tree.insert(2);
         tree.insert(3);
@@ -258,7 +207,7 @@ mod test {
 
     #[test]
     fn delete() {
-        let mut tree = BinSearchTree::new();
+        let mut tree = BinarySearchTree::new();
         tree.insert(5);
         tree.insert(2);
         tree.insert(3);
