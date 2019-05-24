@@ -5,6 +5,7 @@ use super::bintree::{Node as CommonNode, Link as CommonLink, BinaryTreeType, Bin
 pub struct BinarySearchTreeType {}
 
 impl BinaryTreeType for BinarySearchTreeType {
+    #[inline]
     fn is_searchable() -> bool { true }
 }
 
@@ -41,7 +42,6 @@ impl<T: Ord> BinarySearchTree<T> {
 }
 
 impl<T: Ord> Node<T> {
-
     fn insert(&mut self, elem: T) {
         if elem < self.elem {
             if let Some(left) = self.left.as_mut() {

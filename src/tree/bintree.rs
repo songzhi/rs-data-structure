@@ -4,12 +4,13 @@ use core::fmt;
 use core::fmt::Display;
 use crate::utils::width_in_fmt;
 use std::marker::PhantomData;
-use std::any::Any;
 
 pub type Link<T, Ty = BasicBinaryTreeType> = Option<Box<Node<T, Ty>>>;
 
 pub trait BinaryTreeType {
+    #[inline]
     fn is_searchable() -> bool { false }
+    #[inline]
     fn is_avl() -> bool { false }
 }
 
@@ -34,13 +35,13 @@ pub struct BinaryTree<T, Ty = BasicBinaryTreeType> where Ty: BinaryTreeType {
     pub(crate) root: Link<T, Ty>
 }
 
+
 impl<T, Ty> BinaryTree<T, Ty> where Ty: BinaryTreeType {
     pub fn new() -> Self {
         Self {
             root: None
         }
     }
-
     pub fn traverse_pre(&self, mut visit: impl FnMut(&T)) {
         if let Some(tree) = self.root.as_ref() {
             tree.traverse_pre(&mut visit);
