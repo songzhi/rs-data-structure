@@ -42,7 +42,7 @@ impl<T: Ord> BinarySearchTree<T> {
 }
 
 impl<T: Ord> Node<T> {
-    fn insert(&mut self, elem: T) {
+    pub fn insert(&mut self, elem: T) {
         if elem < self.elem {
             if let Some(left) = self.left.as_mut() {
                 left.insert(elem);
@@ -59,7 +59,7 @@ impl<T: Ord> Node<T> {
         self.height = Self::calc_height(&self.left, &self.right);
     }
 
-    fn delete(mut self, elem: T) -> Option<Self> {
+    pub fn delete(mut self, elem: T) -> Option<Self> {
         if elem < self.elem {
             self.left = self.left.and_then(|n| n.delete(elem))
                 .and_then(|n| Some(Box::new(n)));
