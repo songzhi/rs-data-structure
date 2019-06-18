@@ -15,3 +15,4 @@ pub mod graph;
 pub mod tree;
 pub mod expr;
 pub mod glist; // generalized list
+pub mod skiplist;

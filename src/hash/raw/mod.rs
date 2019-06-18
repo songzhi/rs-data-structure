@@ -533,7 +533,7 @@ impl<T> RawTable<T> {
                     // EMPTY entries. These will unfortunately trigger a
                     // match, but once masked may point to a full bucket that
                     // is already occupied. We detect this situation here and
-                    // perform a second scan starting at the begining of the
+                    // perform a second scan starting at the beginning of the
                     // table. This second scan is guaranteed to find an empty
                     // slot (due to the load factor) before hitting the trailing
                     // control bytes (containing EMPTY).
