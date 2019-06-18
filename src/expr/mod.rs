@@ -183,7 +183,7 @@ impl From<Expr<Infix>> for Expr<Postfix> {
                             stack.push(token);
                         }
                         Operator::Mul | Operator::Div => {
-                            let lower_levels = [
+                            const LOWER_LEVELS: [TokenData; 3] = [
                                 TokenData::Operator(Operator::Add),
                                 TokenData::Operator(Operator::Sub),
                                 TokenData::Paren(Paren::Open)
@@ -192,7 +192,7 @@ impl From<Expr<Infix>> for Expr<Postfix> {
                             stack = vec![];
                             post_tokens.extend(iter.by_ref().rev().take_while(
                                 |tk| {
-                                    let could_take = !lower_levels.contains(&tk.data);
+                                    let could_take = !LOWER_LEVELS.contains(&tk.data);
                                     if !could_take {
                                         stack.push(*tk);
                                     }
