@@ -5,7 +5,7 @@ use super::edge::{
     EdgeType,
 };
 use super::node::NodeTrait;
-use super::graph::Undirected;
+use super::Undirected;
 use std::marker::PhantomData;
 use std::slice::Iter;
 

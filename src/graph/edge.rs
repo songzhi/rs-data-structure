@@ -1,8 +1,8 @@
-use super::graph::{Directed, Undirected};
+use super::{Directed, Undirected};
 use crate::graph::node::NodeTrait;
 use indexmap::IndexMap;
-use crate::graph::traverse::Neighbors;
-use crate::graph::graph::Graph;
+use super::traverse::Neighbors;
+use super::Graph;
 use std::marker::PhantomData;
 use indexmap::map::Iter as IndexMapIter;
 
