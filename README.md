@@ -19,11 +19,15 @@ A lot of code is copied or inspired from other crate or rust std.
 * tree
     * binary tree: basic binary tree
     * binary search tree
-    * AVL tree
-    * huffman tree
-    * btree(not yet)
 * deque: queue which is implemented in double linked list
 * glist: general list
 * heap
 * list: single linked list
 * vec: vector
+
+### TODO
+* B-Tree
+* LSM Tree
+* AVL Tree
+* Trie
+* LinkedHashMap
