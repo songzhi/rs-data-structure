@@ -5,16 +5,12 @@ struct Node<T> {
 
 type Link<T> = Option<Box<Node<T>>>;
 
+#[derive(Default)]
 pub struct List<T> {
     head: Link<T>
 }
 
 impl<T> List<T> {
-    pub fn new() -> Self {
-        Self {
-            head: None
-        }
-    }
     pub fn push(&mut self, elem: T) {
         let new_node = Box::new(Node {
             elem,
@@ -54,8 +50,11 @@ impl<T> Drop for List<T> {
 // useful for trivial wrappers around other types.
 pub struct IntoIter<T>(List<T>);
 
-impl<T> List<T> {
-    pub fn into_iter(self) -> IntoIter<T> {
+impl<T> IntoIterator for List<T> {
+    type Item = T;
+    type IntoIter = IntoIter<T>;
+
+    fn into_iter(self) -> IntoIter<T> {
         IntoIter(self)
     }
 }
@@ -115,7 +114,7 @@ mod test {
 
     #[test]
     fn basics() {
-        let mut list = List::new();
+        let mut list = List::default();
 
         // Check empty list behaves right
         assert_eq!(list.pop(), None);
@@ -144,7 +143,7 @@ mod test {
 
     #[test]
     fn peek() {
-        let mut list = List::new();
+        let mut list = List::default();
         assert_eq!(list.peek(), None);
         assert_eq!(list.peek_mut(), None);
         list.push(1);
@@ -157,7 +156,7 @@ mod test {
 
     #[test]
     fn into_iter() {
-        let mut list = List::new();
+        let mut list = List::default();
         list.push(1);
         list.push(2);
         list.push(3);
@@ -170,7 +169,7 @@ mod test {
 
     #[test]
     fn iter() {
-        let mut list = List::new();
+        let mut list = List::default();
         list.push(1);
         list.push(2);
         list.push(3);
@@ -183,7 +182,7 @@ mod test {
 
     #[test]
     fn iter_mut() {
-        let mut list = List::new();
+        let mut list = List::default();
         list.push(1);
         list.push(2);
         list.push(3);
