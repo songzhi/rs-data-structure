@@ -30,4 +30,5 @@ A lot of code is copied or inspired from other crate or rust std.
 * LSM Tree
 * AVL Tree
 * Trie
+* Red Black Tree
 * LinkedHashMap

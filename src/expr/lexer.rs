@@ -27,7 +27,7 @@ impl error::Error for LexerError {
         &self.details
     }
 
-    fn cause(&self) -> Option<&error::Error> {
+    fn cause(&self) -> Option<&dyn error::Error> {
         // Generic error, underlying cause isn't tracked.
         None
     }

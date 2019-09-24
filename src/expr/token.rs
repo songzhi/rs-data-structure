@@ -41,7 +41,7 @@ pub enum TokenData {
 
 impl Display for TokenData {
     fn fmt(&self, f: &mut Formatter) -> Result {
-        match self.clone() {
+        match self {
             TokenData::Number(num) => write!(f, "{}", num),
             TokenData::Operator(op) => write!(f, "{}", op),
             TokenData::Paren(paren) => write!(f, "{}", paren)
