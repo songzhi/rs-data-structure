@@ -17,3 +17,4 @@ pub mod expr;
 // generalized list
 pub mod glist;
 pub mod skiplist;
+pub mod concurrent;
