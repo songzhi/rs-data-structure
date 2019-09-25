@@ -24,8 +24,6 @@ pub struct List<T> {
 
 unsafe impl<T> Send for List<T> {}
 
-unsafe impl<T> Sync for List<T> {}
-
 impl<T> List<T> {
     #[inline]
     pub fn len(&self) -> usize {

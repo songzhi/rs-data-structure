@@ -10,6 +10,7 @@ indexmap = "1.0.2"
 random = "0.12.2"
 bitvec = "0.11.1"
 rand = "0.6.5"
+owned-alloc = "0.2"
 
 [dev-dependencies]
 
