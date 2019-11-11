@@ -15,7 +15,9 @@ use self::edge::{Edges, AllEdges, Direction, EdgeType, IntoWeightedEdge};
 use std::hash::Hash;
 use std::fmt;
 use std::collections::vec_deque::VecDeque;
-use std::collections::HashSet;
+use std::collections::{HashSet, HashMap};
+use std::ops::Add;
+use std::cmp::min;
 
 /// Marker type for a directed graph.
 #[derive(Copy, Debug, Clone)]
@@ -303,6 +305,35 @@ impl<N, E, Ty> Graph<N, E, Ty>
                 }
             }
         }
+    }
+}
+
+impl<N, E, Ty> Graph<N, E, Ty>
+    where
+        N: NodeTrait,
+        E: Ord + Add<Output=E> + Copy,
+        Ty: EdgeType,
+{
+    pub fn least_cost_path(&self, u: N) -> Option<Vec<N>> {
+        if !self.contains_node(u) {
+            return None;
+        }
+        let mut path = vec![u];
+        let mut costs = HashMap::new();
+        for v in self.neighbors(u) {
+            costs.insert(v, *self.edge_weight(u, v)?);
+        }
+        while path.len() != self.node_count() {
+            let (w, _) = self.nodes()
+                .filter(|w| !path.contains(w) && costs.get(&w).is_some())
+                .map(|w| (w, costs.get(&w).unwrap()))
+                .min_by_key(|p| p.1)?;
+            path.push(w);
+            for v in self.neighbors(w).filter(|v| !path.contains(v)) {
+                costs.insert(v, min(costs[&v], costs[&w] + *self.edge_weight(w, v)?));
+            }
+        }
+        Some(path)
     }
 }
 
