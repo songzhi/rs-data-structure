@@ -17,7 +17,6 @@ use std::fmt;
 use std::collections::vec_deque::VecDeque;
 use std::collections::{HashSet, HashMap};
 use std::ops::Add;
-use std::cmp::min;
 
 /// Marker type for a directed graph.
 #[derive(Copy, Debug, Clone)]
@@ -314,26 +313,36 @@ impl<N, E, Ty> Graph<N, E, Ty>
         E: Ord + Add<Output=E> + Copy,
         Ty: EdgeType,
 {
-    pub fn least_cost_path(&self, u: N) -> Option<Vec<N>> {
+    pub fn least_cost_path(&self, u: N) -> Option<HashMap<N, (Vec<N>, E)>> {
         if !self.contains_node(u) {
             return None;
         }
-        let mut path = vec![u];
-        let mut costs = HashMap::new();
+        let mut processed = HashMap::with_capacity(self.node_count());
+        let mut costs = self.nodes().map(|n| (n, None)).collect::<HashMap<N, Option<(E, N)>>>();
         for v in self.neighbors(u) {
-            costs.insert(v, *self.edge_weight(u, v)?);
+            costs.insert(v, Some((*self.edge_weight(u, v)?, u)));
         }
-        while path.len() != self.node_count() {
-            let (w, _) = self.nodes()
-                .filter(|w| !path.contains(w) && costs.get(&w).is_some())
-                .map(|w| (w, costs.get(&w).unwrap()))
-                .min_by_key(|p| p.1)?;
-            path.push(w);
-            for v in self.neighbors(w).filter(|v| !path.contains(v)) {
-                costs.insert(v, min(costs[&v], costs[&w] + *self.edge_weight(w, v)?));
+        while processed.len() != self.node_count() - 1 {
+            let (w, (cost, mut p)) = self.nodes()
+                .filter(|w| *w != u && !processed.contains_key(w) && costs[&w].is_some())
+                .map(|w| (w, costs[&w].unwrap()))
+                .min_by_key(|p| (p.1).0)?;
+            let mut path = vec![w];
+            while p != u {
+                path.push(p);
+                p = costs[&p]?.1;
+            }
+            path.push(u);
+            path.reverse();
+            processed.insert(w, (path, cost));
+            for v in self.neighbors(w).filter(|v| *v != u && !processed.contains_key(v)) {
+                let new_cost = costs[&w]?.0 + *self.edge_weight(w, v)?;
+                if costs[&v].is_none() || costs[&v]?.0 > new_cost {
+                    costs.insert(v, Some((new_cost, w)));
+                }
             }
         }
-        Some(path)
+        Some(processed)
     }
 }
 
@@ -865,5 +874,25 @@ mod tests {
         assert_eq!(false, graph.contains_edge(1, 2));
         assert_eq!(false, graph.contains_edge(1, 3));
         assert_eq!(false, graph.contains_edge(3, 1));
+    }
+
+    #[test]
+    fn least_cost_path() {
+        let mut graph: Graph<char, i32> = Graph::with_capacity(6, 10);
+        graph.add_edge('u', 'v', 2);
+        graph.add_edge('u', 'x', 1);
+        graph.add_edge('u', 'w', 5);
+        graph.add_edge('v', 'x', 2);
+        graph.add_edge('v', 'w', 3);
+        graph.add_edge('x', 'w', 3);
+        graph.add_edge('w', 'y', 1);
+        graph.add_edge('w', 'z', 5);
+        graph.add_edge('y', 'z', 2);
+        graph.add_edge('x', 'y', 1);
+
+        let paths = graph.least_cost_path('u').unwrap();
+        assert_eq!(paths.len(), graph.node_count() - 1);
+        assert_eq!(paths[&'z'].0.iter().collect::<String>(), "uxyz");
+//        assert_eq!(path, "uxyvwz");
     }
 }
