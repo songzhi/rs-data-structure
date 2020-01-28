@@ -893,6 +893,5 @@ mod tests {
         let paths = graph.least_cost_path('u').unwrap();
         assert_eq!(paths.len(), graph.node_count() - 1);
         assert_eq!(paths[&'z'].0.iter().collect::<String>(), "uxyz");
-//        assert_eq!(path, "uxyvwz");
     }
 }
