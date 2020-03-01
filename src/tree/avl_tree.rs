@@ -1,13 +1,17 @@
-use super::binary_tree::{Node as CommonNode, Link as CommonLink, BinaryTreeType, BinaryTree};
+use super::binary_tree::{BinaryTree, BinaryTreeType, Link as CommonLink, Node as CommonNode};
 
 #[derive(Copy, Clone, Debug)]
 pub struct AVLTreeType {}
 
 impl BinaryTreeType for AVLTreeType {
     #[inline]
-    fn is_searchable() -> bool { true }
+    fn is_searchable() -> bool {
+        true
+    }
     #[inline]
-    fn is_avl() -> bool { true }
+    fn is_avl() -> bool {
+        true
+    }
 }
 
 type Link<T> = CommonLink<T, AVLTreeType>;
@@ -61,7 +65,11 @@ impl<T: Ord> Node<T> {
     }
     fn balance_factor(&self) -> isize {
         let left_height = self.left.as_ref().map(|n| n.height() as isize).unwrap_or(0);
-        let right_height = self.right.as_ref().map(|n| n.height() as isize).unwrap_or(0);
+        let right_height = self
+            .right
+            .as_ref()
+            .map(|n| n.height() as isize)
+            .unwrap_or(0);
         left_height - right_height
     }
     fn rebalance(mut self) -> Link<T> {

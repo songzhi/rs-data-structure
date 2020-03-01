@@ -1,5 +1,5 @@
-use std::rc::Rc;
 use bitvec::prelude::BitVec;
+use std::rc::Rc;
 
 type Link<T> = Option<Box<Node<T>>>;
 
@@ -10,7 +10,6 @@ struct Node<T> {
     symbols: Vec<Rc<T>>,
     weight: usize,
 }
-
 
 impl<T: Eq> Node<T> {
     fn new_leaf(symbol: Rc<T>, weight: usize) -> Self {
@@ -40,7 +39,8 @@ pub struct HuffmanTree<T> {
 
 impl<'a, T: Eq + 'a> HuffmanTree<T> {
     pub fn new(leaves: Vec<(T, usize)>) -> Self {
-        let mut nodes: Vec<Box<Node<T>>> = leaves.into_iter()
+        let mut nodes: Vec<Box<Node<T>>> = leaves
+            .into_iter()
             .map(|(symbol, weight)| Box::new(Node::new_leaf(Rc::new(symbol), weight)))
             .collect();
         while nodes.len() != 1 {
@@ -53,19 +53,29 @@ impl<'a, T: Eq + 'a> HuffmanTree<T> {
             root: nodes.pop().unwrap(),
         }
     }
-    pub fn encode(&self, symbols: impl Iterator<Item=&'a T>) -> BitVec {
-        symbols.map(|s| self.encode_symbol(s))
-            .fold(BitVec::with_capacity(self.root.symbols.len() * 8),
-                  |mut prev, mut current| {
-                      prev.append(&mut current);
-                      prev
-                  })
+    pub fn encode(&self, symbols: impl Iterator<Item = &'a T>) -> BitVec {
+        symbols.map(|s| self.encode_symbol(s)).fold(
+            BitVec::with_capacity(self.root.symbols.len() * 8),
+            |mut prev, mut current| {
+                prev.append(&mut current);
+                prev
+            },
+        )
     }
     pub fn encode_symbol(&self, symbol: &T) -> BitVec {
         let mut result: BitVec = BitVec::new();
         let mut tree = self.root.as_ref();
         while !tree.is_leaf() {
-            if tree.left.as_ref().unwrap().symbols.iter().filter(|&s| (**s).eq(symbol)).count() != 0 {
+            if tree
+                .left
+                .as_ref()
+                .unwrap()
+                .symbols
+                .iter()
+                .filter(|&s| (**s).eq(symbol))
+                .count()
+                != 0
+            {
                 result.push(false);
                 tree = tree.left.as_ref().unwrap();
             } else {
@@ -93,7 +103,6 @@ impl<'a, T: Eq + 'a> HuffmanTree<T> {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -101,8 +110,14 @@ mod tests {
     #[test]
     fn test_basic() {
         let leaves = vec![
-            ('A', 8), ('B', 3), ('C', 1), ('D', 1),
-            ('E', 1), ('F', 1), ('G', 1), ('H', 1)
+            ('A', 8),
+            ('B', 3),
+            ('C', 1),
+            ('D', 1),
+            ('E', 1),
+            ('F', 1),
+            ('G', 1),
+            ('H', 1),
         ];
         let tree = HuffmanTree::new(leaves);
         let chars: Vec<char> = "ACDF".chars().collect();

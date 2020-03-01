@@ -1,4 +1,4 @@
-use std::fmt::{Display, Formatter, Result, Debug};
+use std::fmt::{Debug, Display, Formatter, Result};
 
 /// Represents a token
 #[derive(Debug, Clone, PartialEq, Copy)]
@@ -9,15 +9,14 @@ pub struct Token {
 
 impl Token {
     pub fn new(data: TokenData, pos: usize) -> Self {
-        Self {
-            data,
-            pos,
-        }
+        Self { data, pos }
     }
 }
 
 impl Display for Token {
-    fn fmt(&self, f: &mut Formatter) -> Result { write!(f, "{}", self.data) }
+    fn fmt(&self, f: &mut Formatter) -> Result {
+        write!(f, "{}", self.data)
+    }
 }
 
 pub struct VecToken(Vec<Token>);
@@ -44,7 +43,7 @@ impl Display for TokenData {
         match self {
             TokenData::Number(num) => write!(f, "{}", num),
             TokenData::Operator(op) => write!(f, "{}", op),
-            TokenData::Paren(paren) => write!(f, "{}", paren)
+            TokenData::Paren(paren) => write!(f, "{}", paren),
         }
     }
 }
@@ -70,7 +69,7 @@ impl Display for Operator {
                 Operator::Add => "+",
                 Operator::Sub => "-",
                 Operator::Mul => "*",
-                Operator::Div => "/"
+                Operator::Div => "/",
             }
         )
     }
@@ -89,7 +88,7 @@ impl Paren {
     pub fn opposite_paren(&self) -> Self {
         match self {
             Paren::Open => Paren::Close,
-            Paren::Close => Paren::Open
+            Paren::Close => Paren::Open,
         }
     }
 }
@@ -101,7 +100,7 @@ impl Display for Paren {
             "{}",
             match self {
                 Paren::Open => "(",
-                Paren::Close => ")"
+                Paren::Close => ")",
             }
         )
     }

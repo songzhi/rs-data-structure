@@ -2,20 +2,18 @@ pub mod edge;
 pub mod node;
 pub mod traverse;
 
-
 pub use self::node::NodeTrait;
 
-
-use indexmap::IndexMap;
-use std::iter::FromIterator;
-use std::marker::PhantomData;
+use self::edge::{AllEdges, Direction, EdgeType, Edges, IntoWeightedEdge};
 use self::node::Nodes;
 use self::traverse::{Neighbors, NeighborsDirected};
-use self::edge::{Edges, AllEdges, Direction, EdgeType, IntoWeightedEdge};
-use std::hash::Hash;
-use std::fmt;
+use indexmap::IndexMap;
 use std::collections::vec_deque::VecDeque;
-use std::collections::{HashSet, HashMap};
+use std::collections::{HashMap, HashSet};
+use std::fmt;
+use std::hash::Hash;
+use std::iter::FromIterator;
+use std::marker::PhantomData;
 use std::ops::Add;
 
 /// Marker type for a directed graph.
@@ -42,9 +40,9 @@ impl<N: Eq + Hash + fmt::Debug, E: fmt::Debug, Ty: EdgeType> fmt::Debug for Grap
 }
 
 impl<N, E, Ty> Graph<N, E, Ty>
-    where
-        N: NodeTrait,
-        Ty: EdgeType,
+where
+    N: NodeTrait,
+    Ty: EdgeType,
 {
     /// Create a new `Graph` instance.
     pub fn new() -> Self {
@@ -88,9 +86,9 @@ impl<N, E, Ty> Graph<N, E, Ty>
     ///
     /// Nodes are inserted automatically to match the edges.
     pub fn from_edges<I>(iterable: I) -> Self
-        where
-            I: IntoIterator,
-            I::Item: IntoWeightedEdge<E, NodeId=N>,
+    where
+        I: IntoIterator,
+        I::Item: IntoWeightedEdge<E, NodeId = N>,
     {
         Self::from_iter(iterable)
     }
@@ -121,10 +119,12 @@ impl<N, E, Ty> Graph<N, E, Ty>
     pub fn remove_node(&mut self, n: N) -> Option<N> {
         let adj_nodes = self.nodes.remove(&n)?;
         for (adj_v, direction) in adj_nodes {
-            self.nodes.get_mut(&adj_v)?.remove_item(&(adj_v, direction.opposite()));
+            self.nodes
+                .get_mut(&adj_v)?
+                .remove_item(&(adj_v, direction.opposite()));
             match direction {
                 Direction::Outgoing => self.edges.remove(&Self::edge_key(n, adj_v)),
-                Direction::Incoming => self.edges.remove(&Self::edge_key(adj_v, n))
+                Direction::Incoming => self.edges.remove(&Self::edge_key(adj_v, n)),
             };
         }
         Some(n)
@@ -308,22 +308,26 @@ impl<N, E, Ty> Graph<N, E, Ty>
 }
 
 impl<N, E, Ty> Graph<N, E, Ty>
-    where
-        N: NodeTrait,
-        E: Ord + Add<Output=E> + Copy,
-        Ty: EdgeType,
+where
+    N: NodeTrait,
+    E: Ord + Add<Output = E> + Copy,
+    Ty: EdgeType,
 {
     pub fn least_cost_path(&self, u: N) -> Option<HashMap<N, (Vec<N>, E)>> {
         if !self.contains_node(u) {
             return None;
         }
         let mut processed = HashMap::with_capacity(self.node_count());
-        let mut costs = self.nodes().map(|n| (n, None)).collect::<HashMap<N, Option<(E, N)>>>();
+        let mut costs = self
+            .nodes()
+            .map(|n| (n, None))
+            .collect::<HashMap<N, Option<(E, N)>>>();
         for v in self.neighbors(u) {
             costs.insert(v, Some((*self.edge_weight(u, v)?, u)));
         }
         while processed.len() != self.node_count() - 1 {
-            let (w, (cost, mut p)) = self.nodes()
+            let (w, (cost, mut p)) = self
+                .nodes()
                 .filter(|w| *w != u && !processed.contains_key(w) && costs[&w].is_some())
                 .map(|w| (w, costs[&w].unwrap()))
                 .min_by_key(|p| (p.1).0)?;
@@ -335,7 +339,10 @@ impl<N, E, Ty> Graph<N, E, Ty>
             path.push(u);
             path.reverse();
             processed.insert(w, (path, cost));
-            for v in self.neighbors(w).filter(|v| *v != u && !processed.contains_key(v)) {
+            for v in self
+                .neighbors(w)
+                .filter(|v| *v != u && !processed.contains_key(v))
+            {
                 let new_cost = costs[&w]?.0 + *self.edge_weight(w, v)?;
                 if costs[&v].is_none() || costs[&v]?.0 > new_cost {
                     costs.insert(v, Some((new_cost, w)));
@@ -347,15 +354,18 @@ impl<N, E, Ty> Graph<N, E, Ty>
 }
 
 impl<N, E> Graph<N, E, Directed>
-    where N: NodeTrait
+where
+    N: NodeTrait,
 {
     pub fn topological_sort(&mut self) -> Option<Vec<N>> {
         let mut res = Vec::with_capacity(self.node_count());
-        let mut nodes_with_indegree: IndexMap<N, usize> = self.nodes.iter()
-            .map(|(n, _)|
-                (*n, self.incoming_degree(*n)))
+        let mut nodes_with_indegree: IndexMap<N, usize> = self
+            .nodes
+            .iter()
+            .map(|(n, _)| (*n, self.incoming_degree(*n)))
             .collect();
-        let mut que: VecDeque<N> = nodes_with_indegree.iter()
+        let mut que: VecDeque<N> = nodes_with_indegree
+            .iter()
             .filter(|n| *n.1 == 0)
             .map(|n| *n.0)
             .collect();
@@ -380,9 +390,9 @@ impl<N, E> Graph<N, E, Directed>
 
 /// Create a new empty `Graph`.
 impl<N, E, Ty> Default for Graph<N, E, Ty>
-    where
-        N: NodeTrait,
-        Ty: EdgeType,
+where
+    N: NodeTrait,
+    Ty: EdgeType,
 {
     fn default() -> Self {
         Graph::with_capacity(0, 0)
@@ -391,14 +401,14 @@ impl<N, E, Ty> Default for Graph<N, E, Ty>
 
 /// Create a new `Graph` from an iterable of edges.
 impl<N, E, Ty, Item> FromIterator<Item> for Graph<N, E, Ty>
-    where
-        Item: IntoWeightedEdge<E, NodeId=N>,
-        N: NodeTrait,
-        Ty: EdgeType,
+where
+    Item: IntoWeightedEdge<E, NodeId = N>,
+    N: NodeTrait,
+    Ty: EdgeType,
 {
     fn from_iter<I>(iterable: I) -> Self
-        where
-            I: IntoIterator<Item=Item>,
+    where
+        I: IntoIterator<Item = Item>,
     {
         let iter = iterable.into_iter();
         let (low, _) = iter.size_hint();
@@ -412,14 +422,14 @@ impl<N, E, Ty, Item> FromIterator<Item> for Graph<N, E, Ty>
 ///
 /// Nodes are inserted automatically to match the edges.
 impl<N, E, Ty, Item> Extend<Item> for Graph<N, E, Ty>
-    where
-        Item: IntoWeightedEdge<E, NodeId=N>,
-        N: NodeTrait,
-        Ty: EdgeType,
+where
+    Item: IntoWeightedEdge<E, NodeId = N>,
+    N: NodeTrait,
+    Ty: EdgeType,
 {
     fn extend<I>(&mut self, iterable: I)
-        where
-            I: IntoIterator<Item=Item>,
+    where
+        I: IntoIterator<Item = Item>,
     {
         let iter = iterable.into_iter();
         let (low, _) = iter.size_hint();
@@ -434,8 +444,8 @@ impl<N, E, Ty, Item> Extend<Item> for Graph<N, E, Ty>
 
 #[cfg(test)]
 mod tests {
-    use crate::graph::edge::Direction::{Incoming, Outgoing};
     use super::{Directed, Graph, Undirected};
+    use crate::graph::edge::Direction::{Incoming, Outgoing};
 
     #[test]
     fn new() {

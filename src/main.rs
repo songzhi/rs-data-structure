@@ -2,4 +2,7 @@
 
 use rs_data_structure::*;
 
-fn main() {}
+fn main() {
+    let x = 1;
+    let x = x;
+}

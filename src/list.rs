@@ -7,7 +7,7 @@ type Link<T> = Option<Box<Node<T>>>;
 
 #[derive(Default)]
 pub struct List<T> {
-    head: Link<T>
+    head: Link<T>,
 }
 
 impl<T> List<T> {
@@ -26,14 +26,10 @@ impl<T> List<T> {
         })
     }
     pub fn peek(&self) -> Option<&T> {
-        self.head.as_ref().map(|node| {
-            &node.elem
-        })
+        self.head.as_ref().map(|node| &node.elem)
     }
     pub fn peek_mut(&mut self) -> Option<&mut T> {
-        self.head.as_mut().map(|node| {
-            &mut node.elem
-        })
+        self.head.as_mut().map(|node| &mut node.elem)
     }
 }
 
@@ -73,7 +69,9 @@ pub struct Iter<'a, T: 'a> {
 
 impl<'a, T> List<T> {
     pub fn iter(&self) -> Iter<T> {
-        Iter { next: self.head.as_ref().map(|node| &**node) }
+        Iter {
+            next: self.head.as_ref().map(|node| &**node),
+        }
     }
 }
 
@@ -88,12 +86,14 @@ impl<'a, T> Iterator for Iter<'a, T> {
 }
 
 pub struct IterMut<'a, T: 'a> {
-    next: Option<&'a mut Node<T>>
+    next: Option<&'a mut Node<T>>,
 }
 
 impl<T> List<T> {
     pub fn iter_mut(&mut self) -> IterMut<T> {
-        IterMut { next: self.head.as_mut().map(|node| &mut **node) }
+        IterMut {
+            next: self.head.as_mut().map(|node| &mut **node),
+        }
     }
 }
 

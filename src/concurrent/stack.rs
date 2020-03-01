@@ -1,10 +1,9 @@
 //! [Reference](http://moodycamel.com/blog/2014/solving-the-aba-problem-for-lock-free-free-lists)
 
-use std::sync::atomic::{AtomicU32, AtomicPtr, Ordering};
-use std::mem::ManuallyDrop;
 use owned_alloc::OwnedAlloc;
+use std::mem::ManuallyDrop;
 use std::ptr::{null_mut, NonNull};
-
+use std::sync::atomic::{AtomicPtr, AtomicU32, Ordering};
 
 pub struct Node<T> {
     val: ManuallyDrop<T>,
@@ -25,16 +24,14 @@ impl<T> Node<T> {
 const REFS_MASK: u32 = 0x7fff_ffff;
 const SHOULD_BE_ON_STACK: u32 = 0x8000_0000;
 
-
 pub struct Stack<T> {
     top: AtomicPtr<Node<T>>,
-
 }
 
 impl<T> Default for Stack<T> {
     fn default() -> Self {
         Stack {
-            top: AtomicPtr::default()
+            top: AtomicPtr::default(),
         }
     }
 }
@@ -58,7 +55,13 @@ impl<T> Stack<T> {
         unsafe {
             loop {
                 let refs = head.as_ref().refs.load(Ordering::Relaxed);
-                if (refs & REFS_MASK) == 0 || head.as_ref().refs.compare_exchange(refs, refs + 1, Ordering::Acquire, Ordering::Relaxed).is_err() {
+                if (refs & REFS_MASK) == 0
+                    || head
+                        .as_ref()
+                        .refs
+                        .compare_exchange(refs, refs + 1, Ordering::Acquire, Ordering::Relaxed)
+                        .is_err()
+                {
                     head = NonNull::new(self.top.load(Ordering::Acquire))?;
                     continue;
                 }
@@ -67,12 +70,20 @@ impl<T> Stack<T> {
                 // we can read the next and not worry about it changing between now and the time
                 // we do the CAS
                 let next = head.as_ref().next.load(Ordering::Relaxed);
-                match self.top.compare_exchange(head.as_ptr(), next, Ordering::Acquire, Ordering::Relaxed) {
+                match self.top.compare_exchange(
+                    head.as_ptr(),
+                    next,
+                    Ordering::Acquire,
+                    Ordering::Relaxed,
+                ) {
                     Ok(_) => {
                         // Yay, got the node. This means it was on the list, which means
                         // shouldBeOnFreeList must be false no matter the refcount (because
                         // nobody else knows it's been taken off yet, it can't have been put back on).
-                        assert_eq!(head.as_ref().refs.load(Ordering::Relaxed) & SHOULD_BE_ON_STACK, 0);
+                        assert_eq!(
+                            head.as_ref().refs.load(Ordering::Relaxed) & SHOULD_BE_ON_STACK,
+                            0
+                        );
                         // Decrease refcount twice, once for our ref, and once for the list's ref
                         head.as_ref().refs.fetch_sub(2, Ordering::Relaxed);
                         head.as_ptr().drop_in_place();
@@ -105,11 +116,18 @@ impl<T> Stack<T> {
         loop {
             (*node).next.store(head, Ordering::Relaxed);
             (*node).refs.store(1, Ordering::Release);
-            match self.top.compare_exchange(head, node, Ordering::Release, Ordering::Relaxed) {
+            match self
+                .top
+                .compare_exchange(head, node, Ordering::Release, Ordering::Relaxed)
+            {
                 Ok(_) => {}
                 Err(ptr) => {
                     head = ptr;
-                    if (*node).refs.fetch_add(SHOULD_BE_ON_STACK - 1, Ordering::Release) == 1 {
+                    if (*node)
+                        .refs
+                        .fetch_add(SHOULD_BE_ON_STACK - 1, Ordering::Release)
+                        == 1
+                    {
                         continue;
                     }
                 }
@@ -179,7 +197,6 @@ mod test {
         for handle in handles {
             handle.join().expect("thread failed");
         }
-
 
         let expected = NITER * NTHREAD - NITER * NTHREAD / NMOD;
         let mut res = 0;

@@ -1,5 +1,5 @@
+use std::cell::{Ref, RefCell, RefMut};
 use std::rc::Rc;
-use std::cell::{RefCell, Ref, RefMut};
 
 pub struct Deque<T> {
     head: Link<T>,
@@ -26,7 +26,10 @@ impl<T> Node<T> {
 
 impl<T> Deque<T> {
     pub fn new() -> Self {
-        Deque { head: None, tail: None }
+        Deque {
+            head: None,
+            tail: None,
+        }
     }
     pub fn push_front(&mut self, elem: T) {
         // new node needs +2 links,everything else should be +0
@@ -37,13 +40,13 @@ impl<T> Deque<T> {
                 old_head.borrow_mut().prev = Some(new_head.clone()); // +1 new_head
                 new_head.borrow_mut().next = Some(old_head); // +1 old_head
                 self.head = Some(new_head); // +1 new_head, -1 old_head
-                // total: +2 new_head, +0 old_head -- OK!
+                                            // total: +2 new_head, +0 old_head -- OK!
             }
             None => {
                 // empty list, need to set the tail
                 self.tail = Some(new_head.clone()); // +1 new_head
                 self.head = Some(new_head) // +1 new_head
-                // total: +2 new_head -- OK
+                                           // total: +2 new_head -- OK
             }
         }
     }
@@ -60,16 +63,16 @@ impl<T> Deque<T> {
                 None => {
                     // emptying list
                     self.tail.take(); // -1 old
-                    // total: -2 old
+                                      // total: -2 old
                 }
             }
             Rc::try_unwrap(old_head).ok().unwrap().into_inner().elem
         })
     }
     pub fn peek_front(&self) -> Option<Ref<T>> {
-        self.head.as_ref().map(|node| {
-            Ref::map(node.borrow(), |node| &node.elem)
-        })
+        self.head
+            .as_ref()
+            .map(|node| Ref::map(node.borrow(), |node| &node.elem))
     }
 
     pub fn push_back(&mut self, elem: T) {
@@ -102,19 +105,19 @@ impl<T> Deque<T> {
         })
     }
     pub fn peek_back(&self) -> Option<Ref<T>> {
-        self.tail.as_ref().map(|node| {
-            Ref::map(node.borrow(), |node| &node.elem)
-        })
+        self.tail
+            .as_ref()
+            .map(|node| Ref::map(node.borrow(), |node| &node.elem))
     }
     pub fn peek_back_mut(&mut self) -> Option<RefMut<T>> {
-        self.tail.as_ref().map(|node| {
-            RefMut::map(node.borrow_mut(), |node| &mut node.elem)
-        })
+        self.tail
+            .as_ref()
+            .map(|node| RefMut::map(node.borrow_mut(), |node| &mut node.elem))
     }
     pub fn peek_front_mut(&mut self) -> Option<RefMut<T>> {
-        self.head.as_ref().map(|node| {
-            RefMut::map(node.borrow_mut(), |node| &mut node.elem)
-        })
+        self.head
+            .as_ref()
+            .map(|node| RefMut::map(node.borrow_mut(), |node| &mut node.elem))
     }
 }
 

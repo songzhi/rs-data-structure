@@ -1,7 +1,7 @@
-use std::sync::atomic::{AtomicPtr, Ordering};
+use owned_alloc::OwnedAlloc;
 use std::mem::ManuallyDrop;
 use std::ptr::NonNull;
-use owned_alloc::OwnedAlloc;
+use std::sync::atomic::{AtomicPtr, Ordering};
 
 pub struct Node<T> {
     elem: ManuallyDrop<T>,
@@ -33,12 +33,19 @@ impl<T> List<T> {
         let node = OwnedAlloc::new(Node::new(elem)).into_raw();
         let mut head = self.head.load(Ordering::Relaxed);
         loop {
-            unsafe { node.as_ref().next.store(head, Ordering::Relaxed); }
-            match self.head.compare_exchange(head, node.as_ptr(), Ordering::Release, Ordering::Relaxed) {
+            unsafe {
+                node.as_ref().next.store(head, Ordering::Relaxed);
+            }
+            match self.head.compare_exchange(
+                head,
+                node.as_ptr(),
+                Ordering::Release,
+                Ordering::Relaxed,
+            ) {
                 Ok(_) => {
                     break;
                 }
-                Err(ptr) => head = ptr
+                Err(ptr) => head = ptr,
             }
         }
     }
@@ -46,12 +53,17 @@ impl<T> List<T> {
         unsafe {
             let mut head = NonNull::new(self.head.load(Ordering::Relaxed))?;
             loop {
-                match self.head.compare_exchange(head.as_ptr(), head.as_ref().next.load(Ordering::SeqCst), Ordering::Release, Ordering::Relaxed) {
+                match self.head.compare_exchange(
+                    head.as_ptr(),
+                    head.as_ref().next.load(Ordering::SeqCst),
+                    Ordering::Release,
+                    Ordering::Relaxed,
+                ) {
                     Ok(_) => {
                         head.as_ptr().drop_in_place();
                         break Some((&mut *head.as_mut().elem as *mut T).read());
                     }
-                    Err(ptr) => head = NonNull::new(ptr)?
+                    Err(ptr) => head = NonNull::new(ptr)?,
                 }
             }
         }
@@ -62,7 +74,6 @@ impl<T> List<T> {
 mod test {
     use super::*;
     use std::{sync::Arc, thread};
-
 
     #[test]
     fn no_data_corruption() {

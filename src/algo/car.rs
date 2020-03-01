@@ -1,9 +1,9 @@
 //!某商场有一个 100 个车位的停车场，当车位未满时，等待的车辆可以进入并计时；
 //! 当车 位已满时，必须有车辆离开，等待的车辆才能进入；当车辆离开时计算停留的的时间， 并且按照每小时 1 元收费。
 //! 汽车的输入信息格式可以是（进入/离开，车牌号，进入/离 开时间），要求可以随时显示停车场内的车辆信息以及收费历史记录。
+use std::collections::vec_deque::VecDeque;
 use std::collections::HashMap;
 use std::str::FromStr;
-use std::collections::vec_deque::VecDeque;
 
 #[derive(Debug, Eq, PartialEq)]
 pub enum Action {
@@ -15,7 +15,7 @@ impl Action {
     pub fn as_usize(&self) -> usize {
         match self {
             Action::Enter(time) => *time,
-            Action::Leave(time) => *time
+            Action::Leave(time) => *time,
         }
     }
 }
@@ -25,14 +25,10 @@ impl FromStr for Action {
     fn from_str(s: &str) -> Result<Self, ()> {
         let s = s.trim().to_ascii_lowercase();
         if s.starts_with("enter") {
-            let s = s.replace("enter", "")
-                .replace("(", "")
-                .replace(")", "");
+            let s = s.replace("enter", "").replace("(", "").replace(")", "");
             Ok(Action::Enter(s.trim().parse().map_err(|_| ())?))
         } else if s.starts_with("leave") {
-            let s = s.replace("leave", "")
-                .replace("(", "")
-                .replace(")", "");
+            let s = s.replace("leave", "").replace("(", "").replace(")", "");
             Ok(Action::Leave(s.trim().parse().map_err(|_| ())?))
         } else {
             Err(())
@@ -48,7 +44,7 @@ pub struct Car {
 impl Car {
     pub fn new(plate_number: &str) -> Self {
         Self {
-            plate_number: String::from(plate_number)
+            plate_number: String::from(plate_number),
         }
     }
 }
@@ -61,7 +57,6 @@ impl PartialEq for Car {
 
 #[derive(Debug)]
 struct ParkingFee(usize);
-
 
 impl From<usize> for ParkingFee {
     fn from(fee: usize) -> Self {
@@ -93,17 +88,24 @@ impl ParkingLot {
             self.waiting_list.push_back((car, enter_time));
             false
         } else {
-            self.cars.insert(car.plate_number.clone(), (car, enter_time));
+            self.cars
+                .insert(car.plate_number.clone(), (car, enter_time));
             true
         }
     }
     pub fn remove_car(&mut self, plate_number: &str, leave_time: usize) -> Option<usize> {
         let (car, enter_time) = self.cars.remove(plate_number)?;
         let parking_fee = leave_time - enter_time;
-        self.history.push((Action::Enter(enter_time), Action::Leave(leave_time), car, parking_fee.into()));
+        self.history.push((
+            Action::Enter(enter_time),
+            Action::Leave(leave_time),
+            car,
+            parking_fee.into(),
+        ));
         if !self.is_full() {
             if let Some((car, enter_time)) = self.waiting_list.pop_front() {
-                self.cars.insert(car.plate_number.clone(), (car, enter_time));
+                self.cars
+                    .insert(car.plate_number.clone(), (car, enter_time));
             }
         }
         Some(parking_fee)
@@ -116,8 +118,12 @@ impl ParkingLot {
         let action = Action::from_str(split.next().ok_or(())?)?;
         let plate_number = split.next().ok_or(())?;
         match action {
-            Action::Enter(time) => { self.add_car(Car::new(plate_number), time); }
-            Action::Leave(time) => { self.remove_car(plate_number, time); }
+            Action::Enter(time) => {
+                self.add_car(Car::new(plate_number), time);
+            }
+            Action::Leave(time) => {
+                self.remove_car(plate_number, time);
+            }
         }
         Ok(())
     }
@@ -127,11 +133,7 @@ impl ParkingLot {
 }
 
 pub fn test() {
-    let lines = vec![
-        "Enter(1) 京A0001",
-        "Enter(2) 京A8283",
-        "Leave(3) 京A0001"
-    ];
+    let lines = vec!["Enter(1) 京A0001", "Enter(2) 京A8283", "Leave(3) 京A0001"];
     let mut parking_lot = ParkingLot::new();
     for line in lines {
         parking_lot.parse_line(line).unwrap();

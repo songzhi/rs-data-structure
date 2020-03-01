@@ -1,9 +1,8 @@
-use std::rc::Rc;
 use std::cell::RefCell;
+use std::rc::Rc;
 
 use rand;
 use std::fmt::{Debug, Display};
-
 
 type Link<K, V> = Option<Rc<RefCell<Node<K, V>>>>;
 
@@ -84,7 +83,7 @@ impl<K: PartialOrd + Copy, V> SkipList<K, V> {
                     let next = n.clone();
                     match next.borrow().next[level] {
                         Some(ref next) if next.borrow().score <= score => n = next.clone(),
-                        _ => break
+                        _ => break,
                     };
                 }
                 if n.borrow().score == score {
@@ -102,7 +101,6 @@ impl<K: PartialOrd + Copy, V> SkipList<K, V> {
         ListIterator::new(self.head.clone(), level)
     }
 }
-
 
 impl<K: PartialOrd + Copy, V> IntoIterator for SkipList<K, V> {
     type Item = (K, Rc<RefCell<V>>);
@@ -139,12 +137,11 @@ impl<K: PartialOrd + Copy, V> Iterator for ListIterator<K, V> {
                 result = Some((current.score, current.data.clone()));
                 current.next[self.level].clone()
             }
-            _ => None
+            _ => None,
         };
         result
     }
 }
-
 
 impl<K: Display + PartialOrd + Copy, V> std::fmt::Debug for SkipList<K, V> {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
@@ -159,7 +156,7 @@ impl<K: Display + PartialOrd + Copy, V> std::fmt::Debug for SkipList<K, V> {
                 }
                 Ok(())
             }
-            None => write!(f, "The list is empty: []")
+            None => write!(f, "The list is empty: []"),
         }
     }
 }

@@ -1,8 +1,8 @@
+use super::edge::Direction;
+use indexmap::map::Keys;
 use std::fmt::Debug;
 use std::hash::Hash;
 use std::iter::Cloned;
-use indexmap::map::Keys;
-use super::edge::Direction;
 
 /// A trait group for `Graph`'s node identifier.
 pub trait NodeTrait: Copy + Debug + Hash + Ord {}

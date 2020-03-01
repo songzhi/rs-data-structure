@@ -1,6 +1,5 @@
 use unicode_width::UnicodeWidthStr;
 
-
 /// ## What Rust std::fmt does:
 ///
 /// Acording to this [doc](https://doc.rust-lang.org/std/fmt/index.html#width),if I want to print some content which is around with spaces,I should write like this.`println!("Hello {:5}!", "x");`

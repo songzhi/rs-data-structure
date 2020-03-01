@@ -4,17 +4,18 @@
 #![feature(fmt_internals)]
 #![feature(vec_remove_item)]
 
-pub mod vec;
-pub mod list;
-pub mod deque;
 pub mod algo;
+pub mod deque;
+pub mod list;
 pub mod utils;
+pub mod vec;
 //pub mod hash;
-pub mod heap;
-pub mod graph;
-pub mod tree;
 pub mod expr;
+pub mod graph;
+pub mod heap;
+pub mod tree;
 // generalized list
-pub mod glist;
-pub mod skiplist;
 pub mod concurrent;
+pub mod glist;
+pub mod leetcode;
+pub mod skiplist;

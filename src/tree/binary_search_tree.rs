@@ -1,18 +1,18 @@
-use super::binary_tree::{Node as CommonNode, Link as CommonLink, BinaryTreeType, BinaryTree};
-
+use super::binary_tree::{BinaryTree, BinaryTreeType, Link as CommonLink, Node as CommonNode};
 
 #[derive(Copy, Clone, Debug)]
 pub struct BinarySearchTreeType {}
 
 impl BinaryTreeType for BinarySearchTreeType {
     #[inline]
-    fn is_searchable() -> bool { true }
+    fn is_searchable() -> bool {
+        true
+    }
 }
 
 type Link<T> = CommonLink<T, BinarySearchTreeType>;
 type Node<T> = CommonNode<T, BinarySearchTreeType>;
 pub type BinarySearchTree<T> = BinaryTree<T, BinarySearchTreeType>;
-
 
 impl<T: Ord> BinarySearchTree<T> {
     pub fn clear(&mut self) -> Link<T> {
@@ -36,7 +36,8 @@ impl<T: Ord> BinarySearchTree<T> {
     }
     pub fn delete(&mut self, elem: T) {
         let root = self.root.take();
-        self.root = root.and_then(|n| n.delete(elem))
+        self.root = root
+            .and_then(|n| n.delete(elem))
             .and_then(|n| Some(Box::new(n)));
     }
 }
@@ -61,12 +62,17 @@ impl<T: Ord> Node<T> {
 
     pub fn delete(mut self, elem: T) -> Option<Self> {
         if elem < self.elem {
-            self.left = self.left.and_then(|n| n.delete(elem))
+            self.left = self
+                .left
+                .and_then(|n| n.delete(elem))
                 .and_then(|n| Some(Box::new(n)));
         } else if elem > self.elem {
-            self.right = self.right.and_then(|n| n.delete(elem))
+            self.right = self
+                .right
+                .and_then(|n| n.delete(elem))
                 .and_then(|n| Some(Box::new(n)));
-        } // Found element to be deleted
+        }
+        // Found element to be deleted
         else if self.left.is_some() && self.right.is_some() {
             // Two children
             let mut min_node_parent = unbox_link_mut(&mut self.right).unwrap(); // checked before
@@ -74,7 +80,8 @@ impl<T: Ord> Node<T> {
                 if !left.has_child() {
                     break;
                 }
-                min_node_parent = unbox_link_mut(&mut min_node_parent.left).unwrap(); // will never panic
+                min_node_parent = unbox_link_mut(&mut min_node_parent.left).unwrap();
+                // will never panic
             }
             let min_node = min_node_parent.left.take(); // take the min_node
             if let Some(mut node) = min_node {

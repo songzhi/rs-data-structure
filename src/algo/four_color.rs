@@ -3,24 +3,24 @@
 //! 要求建立地图的邻接矩阵存储结构，输入国家的个数和相邻情况，输出每个国家的颜色代码。
 //!
 
-
 use std::collections::HashMap;
-use std::fmt::{Display, Formatter, self};
+use std::fmt::{self, Display, Formatter};
 
 struct Graph {
-    adj_matrix: Vec<Vec<bool>>
+    adj_matrix: Vec<Vec<bool>>,
 }
 
 impl Graph {
     fn new(adj_matrix: Vec<Vec<bool>>) -> Self {
-        Self {
-            adj_matrix
-        }
+        Self { adj_matrix }
     }
     fn get_neighbors(&self, i: usize) -> Vec<usize> {
-        self.adj_matrix[i].iter().enumerate()
+        self.adj_matrix[i]
+            .iter()
+            .enumerate()
             .filter(|&(_, is_adj)| *is_adj)
-            .map(|(j, _)| j).collect()
+            .map(|(j, _)| j)
+            .collect()
     }
 }
 
@@ -35,12 +35,16 @@ pub enum Color {
 
 impl Display for Color {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        write!(f, "{}", match self {
-            Color::Red => "red",
-            Color::Blue => "blue",
-            Color::Green => "green",
-            Color::White => "white"
-        })
+        write!(
+            f,
+            "{}",
+            match self {
+                Color::Red => "red",
+                Color::Blue => "blue",
+                Color::Green => "green",
+                Color::White => "white",
+            }
+        )
     }
 }
 
@@ -51,7 +55,7 @@ impl Color {
             1 => Color::Blue,
             2 => Color::Green,
             3 => Color::White,
-            _ => unreachable!()
+            _ => unreachable!(),
         }
     }
 }
@@ -69,8 +73,7 @@ pub fn color_it(map: Vec<Vec<bool>>) -> Vec<(usize, Color)> {
                 neighbor_colored[*color] = true;
             }
         }
-        if let Some((next_color, _)) = neighbor_colored.iter()
-            .enumerate().find(|&(_, c)| !*c) {
+        if let Some((next_color, _)) = neighbor_colored.iter().enumerate().find(|&(_, c)| !*c) {
             colored.insert(i, next_color);
             stack.push(i);
             i += 1;
@@ -80,7 +83,10 @@ pub fn color_it(map: Vec<Vec<bool>>) -> Vec<(usize, Color)> {
         }
         neighbor_colored.iter_mut().for_each(|c| *c = false);
     }
-    let mut res: Vec<(usize, Color)> = colored.iter().map(|(i, color)| (*i, Color::from_usize(*color))).collect();
+    let mut res: Vec<(usize, Color)> = colored
+        .iter()
+        .map(|(i, color)| (*i, Color::from_usize(*color)))
+        .collect();
     res.sort_by_key(|&(i, _)| i);
     res
 }
@@ -94,7 +100,7 @@ fn test() {
         vec![false, true, true, false, true, false, false],
         vec![false, true, false, true, false, true, true],
         vec![false, true, false, false, true, false, true],
-        vec![true, true, false, false, true, true, false]
+        vec![true, true, false, false, true, true, false],
     ];
 
     let res = color_it(adj_matrix);

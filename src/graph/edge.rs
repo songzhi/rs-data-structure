@@ -1,10 +1,10 @@
-use super::{Directed, Undirected};
-use crate::graph::node::NodeTrait;
-use indexmap::IndexMap;
 use super::traverse::Neighbors;
 use super::Graph;
-use std::marker::PhantomData;
+use super::{Directed, Undirected};
+use crate::graph::node::NodeTrait;
 use indexmap::map::Iter as IndexMapIter;
+use indexmap::IndexMap;
+use std::marker::PhantomData;
 
 /// A graph's edge type determines whether is has directed edges or not.
 pub trait EdgeType {
@@ -50,11 +50,10 @@ impl Direction {
     }
 }
 
-
 pub struct Edges<'a, N, E: 'a, Ty>
-    where
-        N: 'a + NodeTrait,
-        Ty: EdgeType,
+where
+    N: 'a + NodeTrait,
+    Ty: EdgeType,
 {
     from: N,
     edges: &'a IndexMap<(N, N), E>,
@@ -62,9 +61,9 @@ pub struct Edges<'a, N, E: 'a, Ty>
 }
 
 impl<'a, N, E, Ty> Edges<'a, N, E, Ty>
-    where
-        N: 'a + NodeTrait,
-        Ty: EdgeType,
+where
+    N: 'a + NodeTrait,
+    Ty: EdgeType,
 {
     pub fn new(from: N, edges: &'a IndexMap<(N, N), E>, iter: Neighbors<'a, N, Ty>) -> Self {
         Self { from, edges, iter }
@@ -72,10 +71,10 @@ impl<'a, N, E, Ty> Edges<'a, N, E, Ty>
 }
 
 impl<'a, N, E, Ty> Iterator for Edges<'a, N, E, Ty>
-    where
-        N: 'a + NodeTrait,
-        E: 'a,
-        Ty: EdgeType,
+where
+    N: 'a + NodeTrait,
+    E: 'a,
+    Ty: EdgeType,
 {
     type Item = (N, N, &'a E);
     fn next(&mut self) -> Option<Self::Item> {
@@ -98,8 +97,8 @@ pub struct AllEdges<'a, N, E: 'a, Ty> {
 }
 
 impl<'a, N, E, Ty> AllEdges<'a, N, E, Ty>
-    where
-        N: 'a + NodeTrait,
+where
+    N: 'a + NodeTrait,
 {
     pub fn new(inner: IndexMapIter<'a, (N, N), E>, ty: PhantomData<Ty>) -> Self {
         Self { inner, ty }
@@ -107,10 +106,10 @@ impl<'a, N, E, Ty> AllEdges<'a, N, E, Ty>
 }
 
 impl<'a, N, E, Ty> Iterator for AllEdges<'a, N, E, Ty>
-    where
-        N: 'a + NodeTrait,
-        E: 'a,
-        Ty: EdgeType,
+where
+    N: 'a + NodeTrait,
+    E: 'a,
+    Ty: EdgeType,
 {
     type Item = (N, N, &'a E);
 
@@ -166,10 +165,10 @@ impl<'a, N, E, Ty> Iterator for AllEdges<'a, N, E, Ty>
 }
 
 impl<'a, N, E, Ty> DoubleEndedIterator for AllEdges<'a, N, E, Ty>
-    where
-        N: 'a + NodeTrait,
-        E: 'a,
-        Ty: EdgeType,
+where
+    N: 'a + NodeTrait,
+    E: 'a,
+    Ty: EdgeType,
 {
     /// Removes and returns an element from the end of the iterator.
     ///
@@ -191,8 +190,8 @@ pub trait IntoWeightedEdge<E> {
 
 /// Convert an element like `(i, j)` into a triple of source, target, edge weight.
 impl<Ix, E> IntoWeightedEdge<E> for (Ix, Ix)
-    where
-        E: Default,
+where
+    E: Default,
 {
     type NodeId = Ix;
 
@@ -217,8 +216,8 @@ impl<Ix, E> IntoWeightedEdge<E> for (Ix, Ix, E) {
 ///
 /// Clone the edge weight from the reference.
 impl<'a, Ix, E> IntoWeightedEdge<E> for (Ix, Ix, &'a E)
-    where
-        E: Clone,
+where
+    E: Clone,
 {
     type NodeId = Ix;
 
@@ -232,9 +231,9 @@ impl<'a, Ix, E> IntoWeightedEdge<E> for (Ix, Ix, &'a E)
 ///
 /// See that the element `&(i, j)` is a reference.
 impl<'a, Ix, E> IntoWeightedEdge<E> for &'a (Ix, Ix)
-    where
-        Ix: Copy,
-        E: Default,
+where
+    Ix: Copy,
+    E: Default,
 {
     type NodeId = Ix;
 
@@ -249,9 +248,9 @@ impl<'a, Ix, E> IntoWeightedEdge<E> for &'a (Ix, Ix)
 /// Clone the edge weight from the reference.
 /// See that the element `&(i, j, w)` is a reference.
 impl<'a, Ix, E> IntoWeightedEdge<E> for &'a (Ix, Ix, E)
-    where
-        Ix: Copy,
-        E: Clone,
+where
+    Ix: Copy,
+    E: Clone,
 {
     type NodeId = Ix;
     fn into_weighted_edge(self) -> (Ix, Ix, E) {
@@ -261,9 +260,11 @@ impl<'a, Ix, E> IntoWeightedEdge<E> for &'a (Ix, Ix, E)
 
 #[cfg(test)]
 mod tests {
-    use crate::graph::edge::{AllEdges, Direction as CompactDirection, Direction, EdgeType, Edges, IntoWeightedEdge};
-    use crate::graph::{Directed, Undirected};
+    use crate::graph::edge::{
+        AllEdges, Direction as CompactDirection, Direction, EdgeType, Edges, IntoWeightedEdge,
+    };
     use crate::graph::traverse::Neighbors;
+    use crate::graph::{Directed, Undirected};
     use indexmap::IndexMap;
     use std::cmp::PartialEq;
     use std::marker::PhantomData;

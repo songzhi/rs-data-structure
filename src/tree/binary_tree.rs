@@ -1,17 +1,21 @@
+use crate::utils::width_in_fmt;
 use core::cmp::max;
-use std::collections::vec_deque::VecDeque;
 use core::fmt;
 use core::fmt::Display;
-use crate::utils::width_in_fmt;
+use std::collections::vec_deque::VecDeque;
 use std::marker::PhantomData;
 
 pub type Link<T, Ty = BasicBinaryTreeType> = Option<Box<Node<T, Ty>>>;
 
 pub trait BinaryTreeType {
     #[inline]
-    fn is_searchable() -> bool { false }
+    fn is_searchable() -> bool {
+        false
+    }
     #[inline]
-    fn is_avl() -> bool { false }
+    fn is_avl() -> bool {
+        false
+    }
 }
 
 #[derive(Copy, Clone, Debug)]
@@ -19,10 +23,11 @@ pub struct BasicBinaryTreeType {}
 
 impl BinaryTreeType for BasicBinaryTreeType {}
 
-
 #[derive(Debug, Clone)]
 pub struct Node<T, Ty = BasicBinaryTreeType>
-    where Ty: BinaryTreeType {
+where
+    Ty: BinaryTreeType,
+{
     pub elem: T,
     pub left: Link<T, Ty>,
     pub right: Link<T, Ty>,
@@ -31,16 +36,19 @@ pub struct Node<T, Ty = BasicBinaryTreeType>
 }
 
 #[derive(Debug, Clone, Default)]
-pub struct BinaryTree<T, Ty = BasicBinaryTreeType> where Ty: BinaryTreeType {
-    pub(crate) root: Link<T, Ty>
+pub struct BinaryTree<T, Ty = BasicBinaryTreeType>
+where
+    Ty: BinaryTreeType,
+{
+    pub(crate) root: Link<T, Ty>,
 }
 
-
-impl<T, Ty> BinaryTree<T, Ty> where Ty: BinaryTreeType {
+impl<T, Ty> BinaryTree<T, Ty>
+where
+    Ty: BinaryTreeType,
+{
     pub fn new() -> Self {
-        Self {
-            root: None
-        }
+        Self { root: None }
     }
     pub fn traverse_pre(&self, mut visit: impl FnMut(&T)) {
         if let Some(tree) = self.root.as_ref() {
@@ -62,9 +70,12 @@ impl<T, Ty> BinaryTree<T, Ty> where Ty: BinaryTreeType {
             tree.traverse_level(&mut visit);
         }
     }
-    pub fn from_post_expr(tokens: impl Iterator<Item=T>, is_operator: impl Fn(&T) -> bool) -> Self {
+    pub fn from_post_expr(
+        tokens: impl Iterator<Item = T>,
+        is_operator: impl Fn(&T) -> bool,
+    ) -> Self {
         Self {
-            root: Node::from_post_expr(tokens, is_operator)
+            root: Node::from_post_expr(tokens, is_operator),
         }
     }
     pub fn depth(&self) -> usize {
@@ -73,28 +84,33 @@ impl<T, Ty> BinaryTree<T, Ty> where Ty: BinaryTreeType {
     pub fn is_empty(&self) -> bool {
         self.root.is_none()
     }
-    pub fn height(&self) -> usize { self.root.as_ref().map(|n| n.height()).unwrap_or(0) }
+    pub fn height(&self) -> usize {
+        self.root.as_ref().map(|n| n.height()).unwrap_or(0)
+    }
 }
 
 impl<T: PartialEq> BinaryTree<T, BasicBinaryTreeType> {
-    pub fn from_seq_pre(mut seq_itr: impl Iterator<Item=T>, null_val: &T) -> Self {
+    pub fn from_seq_pre(mut seq_itr: impl Iterator<Item = T>, null_val: &T) -> Self {
         Self {
-            root: Node::from_seq_pre(&mut seq_itr, null_val)
+            root: Node::from_seq_pre(&mut seq_itr, null_val),
         }
     }
-    pub fn from_seq_in(mut seq_itr: impl Iterator<Item=T>, null_val: &T) -> Self {
+    pub fn from_seq_in(mut seq_itr: impl Iterator<Item = T>, null_val: &T) -> Self {
         Self {
-            root: Node::from_seq_in(&mut seq_itr, null_val)
+            root: Node::from_seq_in(&mut seq_itr, null_val),
         }
     }
-    pub fn from_seq_post(mut seq_itr: impl Iterator<Item=T>, null_val: &T) -> Self {
+    pub fn from_seq_post(mut seq_itr: impl Iterator<Item = T>, null_val: &T) -> Self {
         Self {
-            root: Node::from_seq_post(&mut seq_itr, null_val)
+            root: Node::from_seq_post(&mut seq_itr, null_val),
         }
     }
 }
 
-impl<T: Display, Ty> Display for BinaryTree<T, Ty> where Ty: BinaryTreeType {
+impl<T: Display, Ty> Display for BinaryTree<T, Ty>
+where
+    Ty: BinaryTreeType,
+{
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         if let Some(ref node) = self.root {
             node.fmt(f)
@@ -110,7 +126,9 @@ fn unbox_link<T, Ty: BinaryTreeType>(link: &Link<T, Ty>) -> Option<&Node<T, Ty>>
 }
 
 impl<T: Ord, Ty> Node<T, Ty>
-    where Ty: BinaryTreeType {
+where
+    Ty: BinaryTreeType,
+{
     pub fn find(&self, elem: &T) -> Option<&Node<T, Ty>> {
         if self.is_searchable() {
             if *elem < self.elem {
@@ -190,7 +208,9 @@ impl<T: Ord, Ty> Node<T, Ty>
 }
 
 impl<T, Ty> Node<T, Ty>
-    where Ty: BinaryTreeType {
+where
+    Ty: BinaryTreeType,
+{
     pub fn new(elem: T) -> Self {
         Self {
             elem,
@@ -249,7 +269,10 @@ impl<T, Ty> Node<T, Ty>
             }
         }
     }
-    pub fn from_post_expr(tokens: impl Iterator<Item=T>, is_operator: impl Fn(&T) -> bool) -> Link<T, Ty> {
+    pub fn from_post_expr(
+        tokens: impl Iterator<Item = T>,
+        is_operator: impl Fn(&T) -> bool,
+    ) -> Link<T, Ty> {
         let mut stack = vec![];
         for symbol in tokens {
             if is_operator(&symbol) {
@@ -265,27 +288,37 @@ impl<T, Ty> Node<T, Ty>
         stack.pop()
     }
     #[inline]
-    pub fn depth(&self) -> usize { self.height }
+    pub fn depth(&self) -> usize {
+        self.height
+    }
     pub(crate) fn calc_height(left: &Link<T, Ty>, right: &Link<T, Ty>) -> usize {
         let left_height = left.as_ref().map(|m| m.height).unwrap_or(0);
         let right_height = right.as_ref().map(|m| m.height).unwrap_or(0);
         max(left_height, right_height) + 1
     }
     #[inline]
-    pub fn height(&self) -> usize { self.height }
+    pub fn height(&self) -> usize {
+        self.height
+    }
     #[inline]
     pub fn has_child(&self) -> bool {
         self.left.is_some() || self.right.is_some()
     }
     #[inline]
-    pub fn is_searchable(&self) -> bool { Ty::is_searchable() }
+    pub fn is_searchable(&self) -> bool {
+        Ty::is_searchable()
+    }
     #[inline]
-    pub fn is_avl(&self) -> bool { Ty::is_avl() }
+    pub fn is_avl(&self) -> bool {
+        Ty::is_avl()
+    }
 }
 
 impl<T: PartialEq, Ty> Node<T, Ty>
-    where Ty: BinaryTreeType {
-    pub fn from_seq_pre(seq_itr: &mut impl Iterator<Item=T>, null_val: &T) -> Link<T, Ty> {
+where
+    Ty: BinaryTreeType,
+{
+    pub fn from_seq_pre(seq_itr: &mut impl Iterator<Item = T>, null_val: &T) -> Link<T, Ty> {
         let elem = seq_itr.next()?;
         if elem == *null_val {
             None
@@ -297,7 +330,7 @@ impl<T: PartialEq, Ty> Node<T, Ty>
             Some(tree)
         }
     }
-    pub fn from_seq_in(seq_itr: &mut impl Iterator<Item=T>, null_val: &T) -> Link<T, Ty> {
+    pub fn from_seq_in(seq_itr: &mut impl Iterator<Item = T>, null_val: &T) -> Link<T, Ty> {
         let elem = seq_itr.next()?;
         if elem == *null_val {
             None
@@ -310,7 +343,7 @@ impl<T: PartialEq, Ty> Node<T, Ty>
             Some(tree)
         }
     }
-    pub fn from_seq_post(seq_itr: &mut impl Iterator<Item=T>, null_val: &T) -> Link<T, Ty> {
+    pub fn from_seq_post(seq_itr: &mut impl Iterator<Item = T>, null_val: &T) -> Link<T, Ty> {
         let elem = seq_itr.next()?;
         if elem == *null_val {
             None
@@ -325,12 +358,18 @@ impl<T: PartialEq, Ty> Node<T, Ty>
     }
 }
 
-
 impl<T: Display, Ty> Display for Node<T, Ty>
-    where Ty: BinaryTreeType {
+where
+    Ty: BinaryTreeType,
+{
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        fn fill_map<'a, T, Ty>(map: &mut Vec<Option<&'a Node<T, Ty>>>, node: &'a Node<T, Ty>, index: usize)
-            where Ty: BinaryTreeType {
+        fn fill_map<'a, T, Ty>(
+            map: &mut Vec<Option<&'a Node<T, Ty>>>,
+            node: &'a Node<T, Ty>,
+            index: usize,
+        ) where
+            Ty: BinaryTreeType,
+        {
             map[index] = Some(node);
             if let Some(ref left) = node.left {
                 fill_map(map, &*left, index * 2 + 1);
@@ -391,8 +430,12 @@ impl<T: Display, Ty> Display for Node<T, Ty>
             for _ in 0..2usize.pow(j as u32) {
                 if let Some(node) = map[index] {
                     let content = format!("({})", node.elem);
-                    write!(f, "{:^width$}", content.as_str(),
-                           width = width_in_fmt(content.as_str(), w * 2))?;
+                    write!(
+                        f,
+                        "{:^width$}",
+                        content.as_str(),
+                        width = width_in_fmt(content.as_str(), w * 2)
+                    )?;
                 } else {
                     write!(f, "{:w$}", "", w = w * 2)?;
                 }

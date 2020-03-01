@@ -1,11 +1,11 @@
-use crate::expr::token::{Token, TokenData};
-use std::{fmt, error};
-use std::marker::PhantomData;
-use crate::expr::token::Operator;
 use crate::expr::lexer::{Lexer, LexerError};
-use std::str::FromStr;
+use crate::expr::token::Operator;
 use crate::expr::token::Paren;
-use std::fmt::{Formatter, Display};
+use crate::expr::token::{Token, TokenData};
+use std::fmt::{Display, Formatter};
+use std::marker::PhantomData;
+use std::str::FromStr;
+use std::{error, fmt};
 
 pub mod lexer;
 pub mod token;
@@ -51,21 +51,33 @@ pub enum Infix {}
 pub enum Postfix {}
 
 pub trait ExprType {
-    fn is_prefix() -> bool { false }
-    fn is_infix() -> bool { false }
-    fn is_postfix() -> bool { false }
+    fn is_prefix() -> bool {
+        false
+    }
+    fn is_infix() -> bool {
+        false
+    }
+    fn is_postfix() -> bool {
+        false
+    }
 }
 
 impl ExprType for Prefix {
-    fn is_prefix() -> bool { true }
+    fn is_prefix() -> bool {
+        true
+    }
 }
 
 impl ExprType for Infix {
-    fn is_infix() -> bool { true }
+    fn is_infix() -> bool {
+        true
+    }
 }
 
 impl ExprType for Postfix {
-    fn is_postfix() -> bool { true }
+    fn is_postfix() -> bool {
+        true
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -88,30 +100,28 @@ impl Expr<Prefix> {
         let mut stack: Vec<f64> = vec![];
         for token in self.tokens.iter().rev() {
             match token.data {
-                TokenData::Operator(op) => {
-                    match op {
-                        Operator::Add => {
-                            let (x, y) = (stack.pop()?, stack.pop()?);
-                            stack.push(x + y);
-                        }
-                        Operator::Sub => {
-                            let (x, y) = (stack.pop()?, stack.pop()?);
-                            stack.push(x - y);
-                        }
-                        Operator::Mul => {
-                            let (x, y) = (stack.pop()?, stack.pop()?);
-                            stack.push(x * y);
-                        }
-                        Operator::Div => {
-                            let (x, y) = (stack.pop()?, stack.pop()?);
-                            stack.push(x / y);
-                        }
+                TokenData::Operator(op) => match op {
+                    Operator::Add => {
+                        let (x, y) = (stack.pop()?, stack.pop()?);
+                        stack.push(x + y);
                     }
-                }
+                    Operator::Sub => {
+                        let (x, y) = (stack.pop()?, stack.pop()?);
+                        stack.push(x - y);
+                    }
+                    Operator::Mul => {
+                        let (x, y) = (stack.pop()?, stack.pop()?);
+                        stack.push(x * y);
+                    }
+                    Operator::Div => {
+                        let (x, y) = (stack.pop()?, stack.pop()?);
+                        stack.push(x / y);
+                    }
+                },
                 TokenData::Number(num) => {
                     stack.push(num);
                 }
-                _ => ()
+                _ => (),
             }
         }
         stack.pop()
@@ -129,30 +139,28 @@ impl Expr<Postfix> {
         let mut stack: Vec<f64> = vec![];
         for token in self.tokens.iter() {
             match token.data {
-                TokenData::Operator(op) => {
-                    match op {
-                        Operator::Add => {
-                            let (x, y) = (stack.pop()?, stack.pop()?);
-                            stack.push(y + x);
-                        }
-                        Operator::Sub => {
-                            let (x, y) = (stack.pop()?, stack.pop()?);
-                            stack.push(y - x);
-                        }
-                        Operator::Mul => {
-                            let (x, y) = (stack.pop()?, stack.pop()?);
-                            stack.push(y * x);
-                        }
-                        Operator::Div => {
-                            let (x, y) = (stack.pop()?, stack.pop()?);
-                            stack.push(y / x);
-                        }
+                TokenData::Operator(op) => match op {
+                    Operator::Add => {
+                        let (x, y) = (stack.pop()?, stack.pop()?);
+                        stack.push(y + x);
                     }
-                }
+                    Operator::Sub => {
+                        let (x, y) = (stack.pop()?, stack.pop()?);
+                        stack.push(y - x);
+                    }
+                    Operator::Mul => {
+                        let (x, y) = (stack.pop()?, stack.pop()?);
+                        stack.push(y * x);
+                    }
+                    Operator::Div => {
+                        let (x, y) = (stack.pop()?, stack.pop()?);
+                        stack.push(y / x);
+                    }
+                },
                 TokenData::Number(num) => {
                     stack.push(num);
                 }
-                _ => ()
+                _ => (),
             }
         }
         stack.pop()
@@ -165,58 +173,52 @@ impl From<Expr<Infix>> for Expr<Postfix> {
         let mut stack: Vec<Token> = vec![];
         for token in infix_expr.tokens {
             match token.data {
-                TokenData::Operator(op) => {
-                    match op {
-                        Operator::Add | Operator::Sub => {
-                            let mut iter = stack.into_iter();
-                            stack = vec![];
-                            post_tokens.extend(iter.by_ref().rev().take_while(
-                                |tk| {
-                                    let could_take = tk.data != TokenData::Paren(Paren::Open);
-                                    if !could_take {
-                                        stack.push(*tk);
-                                    }
-                                    could_take
-                                }
-                            ));
-                            stack.extend(iter);
-                            stack.push(token);
-                        }
-                        Operator::Mul | Operator::Div => {
-                            const LOWER_LEVELS: [TokenData; 3] = [
-                                TokenData::Operator(Operator::Add),
-                                TokenData::Operator(Operator::Sub),
-                                TokenData::Paren(Paren::Open)
-                            ];
-                            let mut iter = stack.into_iter();
-                            stack = vec![];
-                            post_tokens.extend(iter.by_ref().rev().take_while(
-                                |tk| {
-                                    let could_take = !LOWER_LEVELS.contains(&tk.data);
-                                    if !could_take {
-                                        stack.push(*tk);
-                                    }
-                                    could_take
-                                }
-                            ));
-                            stack.extend(iter);
-                            stack.push(token);
-                        }
+                TokenData::Operator(op) => match op {
+                    Operator::Add | Operator::Sub => {
+                        let mut iter = stack.into_iter();
+                        stack = vec![];
+                        post_tokens.extend(iter.by_ref().rev().take_while(|tk| {
+                            let could_take = tk.data != TokenData::Paren(Paren::Open);
+                            if !could_take {
+                                stack.push(*tk);
+                            }
+                            could_take
+                        }));
+                        stack.extend(iter);
+                        stack.push(token);
                     }
-                }
+                    Operator::Mul | Operator::Div => {
+                        const LOWER_LEVELS: [TokenData; 3] = [
+                            TokenData::Operator(Operator::Add),
+                            TokenData::Operator(Operator::Sub),
+                            TokenData::Paren(Paren::Open),
+                        ];
+                        let mut iter = stack.into_iter();
+                        stack = vec![];
+                        post_tokens.extend(iter.by_ref().rev().take_while(|tk| {
+                            let could_take = !LOWER_LEVELS.contains(&tk.data);
+                            if !could_take {
+                                stack.push(*tk);
+                            }
+                            could_take
+                        }));
+                        stack.extend(iter);
+                        stack.push(token);
+                    }
+                },
                 TokenData::Number(_) => post_tokens.push(token),
-                TokenData::Paren(paren) => {
-                    match paren {
-                        Paren::Open => stack.push(token),
-                        Paren::Close => {
-                            let mut iter = stack.into_iter();
-                            post_tokens.extend(iter.by_ref().rev().take_while(
-                                |tk| tk.data != TokenData::Paren(Paren::Open)
-                            ));
-                            stack = iter.collect();
-                        }
+                TokenData::Paren(paren) => match paren {
+                    Paren::Open => stack.push(token),
+                    Paren::Close => {
+                        let mut iter = stack.into_iter();
+                        post_tokens.extend(
+                            iter.by_ref()
+                                .rev()
+                                .take_while(|tk| tk.data != TokenData::Paren(Paren::Open)),
+                        );
+                        stack = iter.collect();
                     }
-                }
+                },
             }
         }
         post_tokens.extend(stack.iter());
@@ -230,58 +232,52 @@ impl From<Expr<Infix>> for Expr<Prefix> {
         let mut stack: Vec<Token> = vec![];
         for token in infix_expr.tokens.into_iter().rev() {
             match token.data {
-                TokenData::Operator(op) => {
-                    match op {
-                        Operator::Add | Operator::Sub => {
-                            let mut iter = stack.into_iter();
-                            stack = vec![];
-                            prefix_tokens.extend(iter.by_ref().rev().take_while(
-                                |tk| {
-                                    let could_take = tk.data != TokenData::Paren(Paren::Close);
-                                    if !could_take {
-                                        stack.push(*tk);
-                                    }
-                                    could_take
-                                }
-                            ));
-                            stack.extend(iter);
-                            stack.push(token);
-                        }
-                        Operator::Mul | Operator::Div => {
-                            let lower_levels = [
-                                TokenData::Operator(Operator::Add),
-                                TokenData::Operator(Operator::Sub),
-                                TokenData::Paren(Paren::Close)
-                            ];
-                            let mut iter = stack.into_iter();
-                            stack = vec![];
-                            prefix_tokens.extend(iter.by_ref().rev().take_while(
-                                |tk| {
-                                    let could_take = !lower_levels.contains(&tk.data);
-                                    if !could_take {
-                                        stack.push(*tk);
-                                    }
-                                    could_take
-                                }
-                            ));
-                            stack.extend(iter);
-                            stack.push(token);
-                        }
+                TokenData::Operator(op) => match op {
+                    Operator::Add | Operator::Sub => {
+                        let mut iter = stack.into_iter();
+                        stack = vec![];
+                        prefix_tokens.extend(iter.by_ref().rev().take_while(|tk| {
+                            let could_take = tk.data != TokenData::Paren(Paren::Close);
+                            if !could_take {
+                                stack.push(*tk);
+                            }
+                            could_take
+                        }));
+                        stack.extend(iter);
+                        stack.push(token);
                     }
-                }
+                    Operator::Mul | Operator::Div => {
+                        let lower_levels = [
+                            TokenData::Operator(Operator::Add),
+                            TokenData::Operator(Operator::Sub),
+                            TokenData::Paren(Paren::Close),
+                        ];
+                        let mut iter = stack.into_iter();
+                        stack = vec![];
+                        prefix_tokens.extend(iter.by_ref().rev().take_while(|tk| {
+                            let could_take = !lower_levels.contains(&tk.data);
+                            if !could_take {
+                                stack.push(*tk);
+                            }
+                            could_take
+                        }));
+                        stack.extend(iter);
+                        stack.push(token);
+                    }
+                },
                 TokenData::Number(_) => prefix_tokens.push(token),
-                TokenData::Paren(paren) => {
-                    match paren {
-                        Paren::Close => stack.push(token),
-                        Paren::Open => {
-                            let mut iter = stack.into_iter();
-                            prefix_tokens.extend(iter.by_ref().rev().take_while(
-                                |tk| tk.data != TokenData::Paren(Paren::Close)
-                            ));
-                            stack = iter.collect();
-                        }
+                TokenData::Paren(paren) => match paren {
+                    Paren::Close => stack.push(token),
+                    Paren::Open => {
+                        let mut iter = stack.into_iter();
+                        prefix_tokens.extend(
+                            iter.by_ref()
+                                .rev()
+                                .take_while(|tk| tk.data != TokenData::Paren(Paren::Close)),
+                        );
+                        stack = iter.collect();
                     }
-                }
+                },
             }
         }
         prefix_tokens.extend(stack.iter());

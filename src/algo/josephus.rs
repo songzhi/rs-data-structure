@@ -3,8 +3,8 @@
 //! 报 m 的人出列，将他的密码作为新的 m 值，从他在顺时针方向上的下一人开始重新从 1 报数，如此下去，直到所有人全部 出列为止。
 //! 建立 n 个人的单循环链表存储结构，运行结束后，输出依次出队的人的序号。
 
-use std::rc::Rc;
 use std::cell::RefCell;
+use std::rc::Rc;
 
 pub struct Node<T> {
     elem: T,
@@ -13,10 +13,7 @@ pub struct Node<T> {
 
 impl<T> Node<T> {
     fn new(elem: T) -> Rc<RefCell<Self>> {
-        Rc::new(RefCell::new(Node {
-            elem,
-            next: None,
-        }))
+        Rc::new(RefCell::new(Node { elem, next: None }))
     }
 }
 
@@ -32,7 +29,6 @@ struct List<T> {
     head: Link<T>,
     tail: Link<T>,
 }
-
 
 impl<T> List<T> {
     fn new() -> Self {
@@ -57,7 +53,6 @@ impl<T> List<T> {
         }
     }
 }
-
 
 pub fn josephus_ring(codes: &[usize], init_top: usize) -> Vec<usize> {
     let mut list = List::new();

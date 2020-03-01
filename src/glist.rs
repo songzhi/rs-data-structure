@@ -1,11 +1,11 @@
 //!  用头尾链表存储表示法建立广义表，输出广义表，求广义表的表头、广义表的表尾和广义表的深度。
 
-use std::rc::Rc;
 use std::cell::RefCell;
-use std::iter::Peekable;
-use std::str::{Chars, FromStr};
-use std::{fmt, error};
 use std::fmt::{Display, Formatter};
+use std::iter::Peekable;
+use std::rc::Rc;
+use std::str::{Chars, FromStr};
+use std::{error, fmt};
 
 type Link<T> = Option<Rc<RefCell<Node<T>>>>;
 
@@ -20,32 +20,34 @@ impl<T> Node<T> {
         Node::Atom(data)
     }
     pub fn new_list(head: Option<Self>, tail: Option<Self>) -> Self {
-        Node::List(head.map(|node| Rc::new(RefCell::new(node))),
-                   tail.map(|node| Rc::new(RefCell::new(node))))
+        Node::List(
+            head.map(|node| Rc::new(RefCell::new(node))),
+            tail.map(|node| Rc::new(RefCell::new(node))),
+        )
     }
     pub fn is_atom(&self) -> bool {
         match self {
             Node::Atom(_) => true,
-            _ => false
+            _ => false,
         }
     }
     pub fn is_empty(&self) -> bool {
         assert!(!self.is_atom());
         match self {
             Node::List(hp, _) => hp.is_none(),
-            _ => false
+            _ => false,
         }
     }
     pub fn get_head(&self) -> Link<T> {
         match self {
             Node::Atom(_) => None,
-            Node::List(hp, _) => hp.clone()
+            Node::List(hp, _) => hp.clone(),
         }
     }
     pub fn get_tail(&self) -> Link<T> {
         match self {
             Node::Atom(_) => None,
-            Node::List(_, tp) => tp.clone()
+            Node::List(_, tp) => tp.clone(),
         }
     }
     pub fn depth(&self) -> usize {
@@ -103,9 +105,11 @@ impl FromStr for Node<String> {
                     let node = stack.pop().ok_or(ParserError::new("stack is empty"))?;
                     let mut list = stack.pop().ok_or(ParserError::new("stack is empty"))?;
                     match list {
-                        Node::List(Some(_), ref mut tail) => *tail = Some(Rc::new(RefCell::new(node))),
+                        Node::List(Some(_), ref mut tail) => {
+                            *tail = Some(Rc::new(RefCell::new(node)))
+                        }
                         Node::List(ref mut head, _) => *head = Some(Rc::new(RefCell::new(node))),
-                        _ => ()
+                        _ => (),
                     }
                     stack.push(list);
                 }
@@ -122,7 +126,9 @@ impl FromStr for Node<String> {
 impl<T: Display> Display for Node<T> {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         match self {
-            Node::Atom(data) => { write!(f, "{}", data)?; }
+            Node::Atom(data) => {
+                write!(f, "{}", data)?;
+            }
             Node::List(head, tail) => {
                 write!(f, "(")?;
                 if let Some(head) = head {
@@ -148,12 +154,16 @@ enum Token {
 
 impl Display for Token {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        write!(f, "{}", match self {
-            Token::CloseParen => ")",
-            Token::OpenParen => "(",
-            Token::Comma => ",",
-            Token::Identifier(s) => s.as_str()
-        })
+        write!(
+            f,
+            "{}",
+            match self {
+                Token::CloseParen => ")",
+                Token::OpenParen => "(",
+                Token::Comma => ",",
+                Token::Identifier(s) => s.as_str(),
+            }
+        )
     }
 }
 
@@ -264,24 +274,27 @@ mod test {
         let buf = "(abc, ( d,(( ),(f))))";
         let mut lexer = Lexer::new(buf);
         lexer.lex().expect("lex failed");
-        assert_eq!(vec![
-            Token::OpenParen,
-            Token::Identifier(String::from("abc")),
-            Token::Comma,
-            Token::OpenParen,
-            Token::Identifier(String::from("d")),
-            Token::Comma,
-            Token::OpenParen,
-            Token::OpenParen,
-            Token::CloseParen,
-            Token::Comma,
-            Token::OpenParen,
-            Token::Identifier(String::from("f")),
-            Token::CloseParen,
-            Token::CloseParen,
-            Token::CloseParen,
-            Token::CloseParen,
-        ], lexer.tokens);
+        assert_eq!(
+            vec![
+                Token::OpenParen,
+                Token::Identifier(String::from("abc")),
+                Token::Comma,
+                Token::OpenParen,
+                Token::Identifier(String::from("d")),
+                Token::Comma,
+                Token::OpenParen,
+                Token::OpenParen,
+                Token::CloseParen,
+                Token::Comma,
+                Token::OpenParen,
+                Token::Identifier(String::from("f")),
+                Token::CloseParen,
+                Token::CloseParen,
+                Token::CloseParen,
+                Token::CloseParen,
+            ],
+            lexer.tokens
+        );
     }
 
     #[test]

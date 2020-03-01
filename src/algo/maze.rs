@@ -1,7 +1,6 @@
 use random::Source;
-use std::fmt::{self, Display, Formatter};
 use std::collections::HashSet;
-
+use std::fmt::{self, Display, Formatter};
 
 #[derive(Debug, Eq, PartialEq, Copy, Clone)]
 pub enum Direction {
@@ -17,7 +16,7 @@ impl Direction {
             Direction::East => Some(Direction::South),
             Direction::South => Some(Direction::West),
             Direction::West => Some(Direction::North),
-            Direction::North => None
+            Direction::North => None,
         }
     }
 }
@@ -41,7 +40,7 @@ impl Block {
             Direction::East => (x + 1, y),
             Direction::South => (x, y + 1),
             Direction::West => (x - 1, y),
-            Direction::North => (x, y - 1)
+            Direction::North => (x, y - 1),
         };
         Self::new(next_pos)
     }
@@ -50,7 +49,6 @@ impl Block {
 pub struct Maze {
     layout: Vec<Vec<bool>>,
 }
-
 
 impl Maze {
     pub fn default() -> Self {
@@ -66,9 +64,7 @@ impl Maze {
                 *elem = sequence.next().unwrap() >= 0;
             }
         }
-        Self {
-            layout
-        }
+        Self { layout }
     }
 
     pub fn has_path(&self, start: (usize, usize)) -> Option<Vec<(usize, usize)>> {
@@ -76,12 +72,16 @@ impl Maze {
         self.has_path_with_visited(start, &mut visited)
     }
 
-    fn has_path_with_visited(&self, start: (usize, usize), visited: &mut HashSet<(usize, usize)>)
-                             -> Option<Vec<(usize, usize)>> {
+    fn has_path_with_visited(
+        &self,
+        start: (usize, usize),
+        visited: &mut HashSet<(usize, usize)>,
+    ) -> Option<Vec<(usize, usize)>> {
         let mut stack = Vec::new();
         let mut current_block = Block::new(start);
         loop {
-            if self.is_passable(current_block.pos) && visited.insert(current_block.pos) { // passable and not visited before
+            if self.is_passable(current_block.pos) && visited.insert(current_block.pos) {
+                // passable and not visited before
                 stack.push(current_block);
                 if self.is_in_edge(current_block.pos) {
                     break Some(stack.iter().map(|block| block.pos).collect());
@@ -89,7 +89,9 @@ impl Maze {
                 current_block = current_block.next_block();
             } else {
                 let mut iter = stack.into_iter();
-                iter.by_ref().take_while(|block| block.direction == Direction::North).count();
+                iter.by_ref()
+                    .take_while(|block| block.direction == Direction::North)
+                    .count();
                 stack = iter.collect();
                 if let Some(mut block) = stack.pop() {
                     block.direction = block.direction.next_direction().unwrap();
@@ -105,7 +107,9 @@ impl Maze {
     pub fn len(&self) -> usize {
         self.layout.len()
     }
-    pub fn is_empty(&self) -> bool { self.len() == 0 }
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
     pub fn is_in_edge(&self, (x, y): (usize, usize)) -> bool {
         x == 0 || x == self.len() || y == 0 || y == self.len()
     }

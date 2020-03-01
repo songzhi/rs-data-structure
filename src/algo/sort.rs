@@ -1,6 +1,5 @@
 use core::{mem, ptr};
 
-
 /// When dropped, copies from `src` into `dest`.
 struct CopyOnDrop<T> {
     src: *mut T,
@@ -9,14 +8,16 @@ struct CopyOnDrop<T> {
 
 impl<T> Drop for CopyOnDrop<T> {
     fn drop(&mut self) {
-        unsafe { ptr::copy_nonoverlapping(self.src, self.dest, 1); }
+        unsafe {
+            ptr::copy_nonoverlapping(self.src, self.dest, 1);
+        }
     }
 }
 
-
 /// Shifts the first element to the right until it encounters a greater or equal element.
 fn shift_head<T, F>(v: &mut [T], is_less: &mut F)
-    where F: FnMut(&T, &T) -> bool
+where
+    F: FnMut(&T, &T) -> bool,
 {
     let len = v.len();
     unsafe {
@@ -48,7 +49,8 @@ fn shift_head<T, F>(v: &mut [T], is_less: &mut F)
 
 /// Shifts the last element to the left until it encounters a smaller or equal element.
 fn shift_tail<T, F>(v: &mut [T], is_less: &mut F)
-    where F: FnMut(&T, &T) -> bool
+where
+    F: FnMut(&T, &T) -> bool,
 {
     let len = v.len();
     unsafe {
@@ -79,14 +81,18 @@ fn shift_tail<T, F>(v: &mut [T], is_less: &mut F)
 }
 
 pub fn insertion_sort<T, F>(v: &mut [T], is_less: &mut F)
-    where F: FnMut(&T, &T) -> bool {
+where
+    F: FnMut(&T, &T) -> bool,
+{
     for i in 1..v.len() {
         shift_tail(&mut v[..i + 1], is_less);
     }
 }
 
 pub fn shell_sort<T, F>(v: &mut [T], is_less: &mut F)
-    where F: FnMut(&T, &T) -> bool {
+where
+    F: FnMut(&T, &T) -> bool,
+{
     let v_len = v.len();
     let mut increment = v_len / 2;
     unsafe {
@@ -100,7 +106,11 @@ pub fn shell_sort<T, F>(v: &mut [T], is_less: &mut F)
                 };
                 while j >= increment {
                     if is_less(&*tmp, &v[j - increment]) {
-                        ptr::copy_nonoverlapping(v.get_unchecked(j - increment), v.get_unchecked_mut(j), 1);
+                        ptr::copy_nonoverlapping(
+                            v.get_unchecked(j - increment),
+                            v.get_unchecked_mut(j),
+                            1,
+                        );
                     } else {
                         // hole.dest = v.get_unchecked_mut(j);
                         break;
@@ -115,7 +125,8 @@ pub fn shell_sort<T, F>(v: &mut [T], is_less: &mut F)
 }
 
 pub fn heapsort<T, F>(v: &mut [T], is_less: &mut F)
-    where F: FnMut(&T, &T) -> bool
+where
+    F: FnMut(&T, &T) -> bool,
 {
     // This binary heap respects the invariant `parent >= child`.
     let mut sift_down = |v: &mut [T], mut node| {
@@ -155,13 +166,17 @@ pub fn heapsort<T, F>(v: &mut [T], is_less: &mut F)
 }
 
 pub fn merge_sort<T, F>(v: &mut [T], is_less: &mut F)
-    where F: FnMut(&T, &T) -> bool {
+where
+    F: FnMut(&T, &T) -> bool,
+{
     let v_len = v.len();
     let mut tmp = Vec::with_capacity(v_len);
     sort(v, &mut tmp, 0, v_len - 1, is_less);
 
     fn sort<T, F>(v: &mut [T], tmp: &mut [T], left: usize, right: usize, is_less: &mut F)
-        where F: FnMut(&T, &T) -> bool {
+    where
+        F: FnMut(&T, &T) -> bool,
+    {
         if left < right {
             let center = (left + right) / 2;
             sort(v, tmp, left, center, is_less);
@@ -170,8 +185,16 @@ pub fn merge_sort<T, F>(v: &mut [T], is_less: &mut F)
         }
     }
 
-    fn merge<T, F>(v: &mut [T], tmp: &mut [T], left: usize, right: usize, right_end: usize, is_less: &mut F)
-        where F: FnMut(&T, &T) -> bool {
+    fn merge<T, F>(
+        v: &mut [T],
+        tmp: &mut [T],
+        left: usize,
+        right: usize,
+        right_end: usize,
+        is_less: &mut F,
+    ) where
+        F: FnMut(&T, &T) -> bool,
+    {
         let mut left = left;
         let mut right = right;
         let left_end = right - 1;
@@ -181,35 +204,59 @@ pub fn merge_sort<T, F>(v: &mut [T], is_less: &mut F)
         unsafe {
             while left <= left_end && right <= right_end {
                 if is_less(&v[left], &v[right]) {
-                    ptr::copy_nonoverlapping(v.get_unchecked(left), tmp.get_unchecked_mut(tmp_pos), 1);
+                    ptr::copy_nonoverlapping(
+                        v.get_unchecked(left),
+                        tmp.get_unchecked_mut(tmp_pos),
+                        1,
+                    );
                     left += 1;
                 } else {
-                    ptr::copy_nonoverlapping(v.get_unchecked(right), tmp.get_unchecked_mut(tmp_pos), 1);
+                    ptr::copy_nonoverlapping(
+                        v.get_unchecked(right),
+                        tmp.get_unchecked_mut(tmp_pos),
+                        1,
+                    );
                     right += 1;
                 }
                 tmp_pos += 1;
             }
             if left <= left_end {
                 let left_half_rest = left_end - left + 1;
-                ptr::copy_nonoverlapping(v.get_unchecked(left), tmp.get_unchecked_mut(tmp_pos), left_half_rest);
+                ptr::copy_nonoverlapping(
+                    v.get_unchecked(left),
+                    tmp.get_unchecked_mut(tmp_pos),
+                    left_half_rest,
+                );
                 tmp_pos += left_half_rest;
             }
             if right <= right_end {
                 let right_half_rest = right_end - right + 1;
-                ptr::copy_nonoverlapping(v.get_unchecked(right), tmp.get_unchecked_mut(tmp_pos), right_half_rest);
+                ptr::copy_nonoverlapping(
+                    v.get_unchecked(right),
+                    tmp.get_unchecked_mut(tmp_pos),
+                    right_half_rest,
+                );
             }
             let old_left = right_end + 1 - num_elems;
-            ptr::copy_nonoverlapping(tmp.get_unchecked(old_left), v.get_unchecked_mut(old_left), num_elems);
+            ptr::copy_nonoverlapping(
+                tmp.get_unchecked(old_left),
+                v.get_unchecked_mut(old_left),
+                num_elems,
+            );
         }
     }
 }
 
 pub fn quick_sort<T, F>(v: &mut [T], is_less: &mut F)
-    where F: FnMut(&T, &T) -> bool {
+where
+    F: FnMut(&T, &T) -> bool,
+{
     sort(v, 0, v.len() - 1, is_less);
 
     fn sort<T, F>(v: &mut [T], left: usize, right: usize, is_less: &mut F)
-        where F: FnMut(&T, &T) -> bool {
+    where
+        F: FnMut(&T, &T) -> bool,
+    {
         const CUTOFF: usize = 3;
         if left + CUTOFF <= right {
             return insertion_sort(v.split_at_mut(left).1, is_less);
@@ -219,8 +266,12 @@ pub fn quick_sort<T, F>(v: &mut [T], is_less: &mut F)
         let mut j = right - 1;
         unsafe {
             loop {
-                while is_less(v.get_unchecked(i + 1), v.get_unchecked(pivot)) { i += 1; }
-                while !is_less(v.get_unchecked(j - 1), v.get_unchecked(pivot)) { j -= 1; }
+                while is_less(v.get_unchecked(i + 1), v.get_unchecked(pivot)) {
+                    i += 1;
+                }
+                while !is_less(v.get_unchecked(j - 1), v.get_unchecked(pivot)) {
+                    j -= 1;
+                }
                 if i < j {
                     ptr::swap(v.get_unchecked_mut(i), v.get_unchecked_mut(j));
                 } else {
@@ -233,7 +284,9 @@ pub fn quick_sort<T, F>(v: &mut [T], is_less: &mut F)
         }
     }
     fn choose_pivot<T, F>(v: &mut [T], is_less: &mut F) -> (usize, bool)
-        where F: FnMut(&T, &T) -> bool {
+    where
+        F: FnMut(&T, &T) -> bool,
+    {
         // Minimum length to choose the median-of-medians method.
         // Shorter slices use the simple median-of-three method.
         const SHORTEST_MEDIAN_OF_MEDIANS: usize = 50;
@@ -295,7 +348,9 @@ pub fn quick_sort<T, F>(v: &mut [T], is_less: &mut F)
 }
 
 pub fn selection_sort<T, F>(v: &mut [T], is_less: &mut F)
-    where F: FnMut(&T, &T) -> bool {
+where
+    F: FnMut(&T, &T) -> bool,
+{
     let v_len = v.len();
     for i in 0..v_len - 1 {
         unsafe {
@@ -311,7 +366,9 @@ pub fn selection_sort<T, F>(v: &mut [T], is_less: &mut F)
 }
 
 pub fn bubble_sort<T, F>(v: &mut [T], is_less: &mut F)
-    where F: FnMut(&T, &T) -> bool {
+where
+    F: FnMut(&T, &T) -> bool,
+{
     unsafe {
         let v_len = v.len();
         for _ in 0..v_len {

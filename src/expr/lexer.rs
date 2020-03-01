@@ -1,6 +1,9 @@
-use super::token::{Token, TokenData, Operator, Paren};
-use std::{fmt, error, str::{FromStr, Chars}, iter::Peekable};
-
+use super::token::{Operator, Paren, Token, TokenData};
+use std::{
+    error, fmt,
+    iter::Peekable,
+    str::{Chars, FromStr},
+};
 
 /// An error that occurred during lexing or compiling of the source input.
 #[derive(Debug, Clone)]
@@ -148,7 +151,8 @@ impl<'a> Lexer<'a> {
                         }
                     }
                     self.push_token(TokenData::Number(
-                        f64::from_str(&buf).map_err(|_| LexerError::new("Number parsing failed"))?
+                        f64::from_str(&buf)
+                            .map_err(|_| LexerError::new("Number parsing failed"))?,
                     ))
                 }
                 '(' => self.push_token(TokenData::Paren(Paren::Open)),
@@ -161,10 +165,7 @@ impl<'a> Lexer<'a> {
                     self.pos = 0;
                 }
                 ' ' => (),
-                ch => panic!(
-                    "{}: Unexpected '{}'",
-                    self.pos, ch
-                ),
+                ch => panic!("{}: Unexpected '{}'", self.pos, ch),
             }
         }
     }
