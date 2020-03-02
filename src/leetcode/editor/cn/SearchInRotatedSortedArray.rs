@@ -1,4 +1,5 @@
 //! [33]搜索旋转排序数组
+//! 二分查找,先找旋转点,再按旋转点划分,从一边找target.注意处理边界条件.
 //假设按照升序排序的数组在预先未知的某个点上进行了旋转。
 //
 // ( 例如，数组 [0,1,2,4,5,6,7] 可能变为 [4,5,6,7,0,1,2] )。
@@ -21,8 +22,6 @@
 //输出: -1
 // Related Topics 数组 二分查找
 
-///
-///
 pub struct Solution;
 
 //leetcode submit region begin(Prohibit modification and deletion)

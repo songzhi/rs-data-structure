@@ -3,3 +3,4 @@
 .idea
 .vscode
 Cargo.lock
+src/leetcode/editor/cn/*.json
