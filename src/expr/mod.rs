@@ -1,11 +1,12 @@
-use crate::expr::lexer::{Lexer, LexerError};
-use crate::expr::token::Operator;
-use crate::expr::token::Paren;
-use crate::expr::token::{Token, TokenData};
+use std::{error, fmt};
 use std::fmt::{Display, Formatter};
 use std::marker::PhantomData;
 use std::str::FromStr;
-use std::{error, fmt};
+
+use crate::expr::lexer::{Lexer, LexerError};
+use crate::expr::token::{Token, TokenData};
+use crate::expr::token::Operator;
+use crate::expr::token::Paren;
 
 pub mod lexer;
 pub mod token;
@@ -35,7 +36,7 @@ impl error::Error for ExprError {
         &self.details
     }
 
-    fn cause(&self) -> Option<&error::Error> {
+    fn cause(&self) -> Option<&dyn error::Error> {
         // Generic error, underlying cause isn't tracked.
         None
     }

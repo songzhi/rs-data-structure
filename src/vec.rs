@@ -1,4 +1,4 @@
-use std::alloc::{handle_alloc_error, Alloc, Global, Layout};
+use std::alloc::{AllocRef, Global, handle_alloc_error, Layout};
 use std::marker::PhantomData;
 use std::mem;
 use std::ops::{Deref, DerefMut};
