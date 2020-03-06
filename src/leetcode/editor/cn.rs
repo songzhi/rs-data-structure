@@ -6,3 +6,5 @@ pub mod AddTwoNumbers;
 pub mod ReverseInteger;
 pub mod PalindromeNumber;
 pub mod LongestCommonPrefix;
+pub mod ValidParentheses;
+pub mod MergeTwoSortedLists;
