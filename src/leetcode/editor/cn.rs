@@ -8,3 +8,7 @@ pub mod PalindromeNumber;
 pub mod LongestCommonPrefix;
 pub mod ValidParentheses;
 pub mod MergeTwoSortedLists;
+pub mod RemoveDuplicatesFromSortedArray;
+pub mod MaximumSubarray;
+pub mod ClimbingStairs;
+pub mod HouseRobber;
