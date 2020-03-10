@@ -12,3 +12,6 @@ pub mod RemoveDuplicatesFromSortedArray;
 pub mod MaximumSubarray;
 pub mod ClimbingStairs;
 pub mod HouseRobber;
+pub mod LongestPalindromicSubstring;
+pub mod EditDistance;
+pub mod CoinChange;
