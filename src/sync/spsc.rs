@@ -23,12 +23,20 @@ impl<T> Queue<T> {
     }
     pub fn send(&self, t: T) {
         self.empty_count.acquire();
-        self.queue.lock().expect("failed to lock queue").push_back(t);
+        self.queue
+            .lock()
+            .expect("failed to lock queue")
+            .push_back(t);
         self.full_count.release();
     }
     pub fn recv(&self) -> T {
         self.full_count.acquire();
-        let t = self.queue.lock().expect("failed to lock queue").pop_front().unwrap();
+        let t = self
+            .queue
+            .lock()
+            .expect("failed to lock queue")
+            .pop_front()
+            .unwrap();
         self.empty_count.release();
         t
     }
