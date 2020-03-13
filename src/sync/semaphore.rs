@@ -16,19 +16,23 @@ impl Semaphore {
             condvar: Condvar::new(),
         }
     }
-
-    pub fn release(&self) {
+    ///
+    /// returns: the old value
+    pub fn release(&self) -> usize {
         let mut val = self.mutex.lock().expect("failed to lock");
         val.add_assign(1);
         self.condvar.notify_all();
+        *val - 1
     }
-
-    pub fn acquire(&self) {
+    ///
+    /// returns: the old value
+    pub fn acquire(&self) -> usize {
         let mut val = self.mutex.lock().expect("failed to lock");
         while val.eq(&0) {
             val = self.condvar.wait(val).expect("failed to wait condvar");
         }
         val.sub_assign(1);
+        *val + 1
     }
 }
 
