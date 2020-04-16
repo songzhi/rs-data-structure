@@ -28,24 +28,22 @@ impl Solution {
     pub fn longest_common_prefix(strs: Vec<String>) -> String {
         let mut strs = strs.into_iter();
         if let Some(first) = strs.next() {
-            let mut prefix_end = first.len();
+            let mut prefix = first.as_bytes();
             for s in strs {
                 if s.is_empty() {
                     return String::new();
                 }
-                for (i, (c1, c2)) in first.as_bytes().iter().zip(s.as_bytes()).enumerate() {
-                    if i > prefix_end {
-                        break;
-                    } else if c1.ne(c2) {
-                        prefix_end = std::cmp::min(prefix_end, i);
+                for (i, (c1, c2)) in prefix.iter().zip(s.as_bytes()).enumerate() {
+                    if c1.ne(c2) {
+                        prefix = &prefix[..std::cmp::min(prefix.len(), i)];
                         break;
                     } else if i == s.len() - 1 {
-                        prefix_end = std::cmp::min(prefix_end, i + 1);
+                        prefix = &prefix[..std::cmp::min(prefix.len(), i + 1)];
                         break;
                     }
                 }
             }
-            first.as_str()[..prefix_end].into()
+            first.as_str()[..prefix.len()].into()
         } else {
             String::new()
         }
