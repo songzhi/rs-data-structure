@@ -1,8 +1,7 @@
 #![allow(non_snake_case)]
 
-pub mod EditDistance;
-pub mod HouseRobber;
-pub mod LongestPalindromicSubstring;
+
+pub mod house_robber;
 pub mod MaximumSubarray;
 pub mod MergeTwoSortedLists;
 pub mod PalindromeNumber;
