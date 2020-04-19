@@ -2,13 +2,13 @@
 
 
 pub mod house_robber;
-pub mod MaximumSubarray;
-pub mod MergeTwoSortedLists;
-pub mod PalindromeNumber;
-pub mod RemoveDuplicatesFromSortedArray;
-pub mod ReverseInteger;
-pub mod SearchInRotatedSortedArray;
-pub mod ThreeSum;
+pub mod maximum_subarray;
+pub mod merge_two_sorted_lists;
+pub mod palindrome_number;
+pub mod remove_duplicates_from_sorted_array;
+pub mod reverse_integer;
+pub mod search_in_rotated_sorted_array;
+pub mod three_sum;
 pub mod ValidParentheses;
 pub mod add_two_numbers;
 pub mod climbing_stairs;

@@ -35,8 +35,7 @@ impl Solution {
             x /= 10;
             rev = rev
                 .checked_mul(10)
-                .map(|x| x.checked_add(pop))
-                .flatten()
+                .and_then(|x| x.checked_add(pop))
                 .unwrap_or(0);
         }
         rev
