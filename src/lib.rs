@@ -19,4 +19,4 @@
 // pub mod glist;
 pub mod leetcode;
 // pub mod skiplist;
-pub mod sync;
+// pub mod sync;
