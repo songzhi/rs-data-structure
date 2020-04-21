@@ -18,3 +18,7 @@ pub mod subsets;
 pub mod three_sum;
 pub mod unique_paths;
 pub mod valid_parentheses;
+pub mod gray_code;
+pub mod maximum_depth_of_binary_tree;
+pub mod longest_substring_without_repeating_characters;
+pub mod roman_to_integer;
