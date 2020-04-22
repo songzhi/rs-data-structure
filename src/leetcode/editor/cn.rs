@@ -22,3 +22,6 @@ pub mod gray_code;
 pub mod maximum_depth_of_binary_tree;
 pub mod longest_substring_without_repeating_characters;
 pub mod roman_to_integer;
+pub mod longest_palindromic_substring;
+pub mod best_time_to_buy_and_sell_stock;
+pub mod best_time_to_buy_and_sell_stock_ii;
