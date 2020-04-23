@@ -25,3 +25,7 @@ pub mod roman_to_integer;
 pub mod longest_palindromic_substring;
 pub mod best_time_to_buy_and_sell_stock;
 pub mod best_time_to_buy_and_sell_stock_ii;
+pub mod single_number;
+pub mod lru_cache;
+pub mod majority_element;
+pub mod kth_largest_element_in_an_array;
