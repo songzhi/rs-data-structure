@@ -39,5 +39,5 @@ pub mod two_sum;
 pub mod unique_paths;
 pub mod valid_parentheses;
 pub mod happy_number;
-pub mod n_queens;
 pub mod implement_trie_prefix_tree;
+pub mod simplify_path;
