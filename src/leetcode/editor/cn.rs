@@ -41,3 +41,6 @@ pub mod valid_parentheses;
 pub mod happy_number;
 pub mod implement_trie_prefix_tree;
 pub mod simplify_path;
+pub mod mini_parser;
+pub mod basic_calculator;
+pub mod evaluate_reverse_polish_notation;
