@@ -46,3 +46,4 @@ pub mod basic_calculator;
 pub mod evaluate_reverse_polish_notation;
 pub mod binary_tree_postorder_traversal;
 pub mod binary_tree_preorder_traversal;
+pub mod flatten_nested_list_iterator;
