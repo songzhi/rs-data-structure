@@ -4,3 +4,4 @@
 .vscode
 Cargo.lock
 src/leetcode/editor/cn/*.json
+src/leetcode/editor/cn/doc/*
