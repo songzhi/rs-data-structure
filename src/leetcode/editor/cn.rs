@@ -48,3 +48,5 @@ pub mod three_sum;
 pub mod two_sum;
 pub mod unique_paths;
 pub mod valid_parentheses;
+pub mod number_of_1_bits;
+pub mod hamming_distance;
