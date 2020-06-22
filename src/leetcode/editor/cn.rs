@@ -1,3 +1,4 @@
+mod binary_tree_inorder_traversal;
 mod add_two_numbers;
 mod basic_calculator;
 mod best_time_to_buy_and_sell_stock;
