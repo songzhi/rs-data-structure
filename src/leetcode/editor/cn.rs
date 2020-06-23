@@ -1,3 +1,6 @@
+mod binary_tree_maximum_path_sum;
+mod balanced_binary_tree;
+mod binary_tree_level_order_traversal;
 mod binary_tree_inorder_traversal;
 mod add_two_numbers;
 mod basic_calculator;
