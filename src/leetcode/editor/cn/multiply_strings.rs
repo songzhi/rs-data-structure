@@ -21,8 +21,6 @@
 //
 // Related Topics 数学 字符串
 
-
-
 pub struct Solution;
 
 //leetcode submit region begin(Prohibit modification and deletion)

@@ -24,13 +24,19 @@ pub struct Solution;
 //leetcode submit region begin(Prohibit modification and deletion)
 impl Solution {
     pub fn three_sum(mut nums: Vec<i32>) -> Vec<Vec<i32>> {
-        if nums.len() < 3 { return vec![]; }
+        if nums.len() < 3 {
+            return vec![];
+        }
         use std::cmp::Ordering;
         nums.sort();
         let mut result = vec![];
         for (i, v) in nums.iter().enumerate() {
-            if v.gt(&0) { break; }
-            if i > 0 && nums[i] == nums[i - 1] { continue; } // 去重
+            if v.gt(&0) {
+                break;
+            }
+            if i > 0 && nums[i] == nums[i - 1] {
+                continue;
+            } // 去重
             let mut l = i + 1;
             let mut r = nums.len() - 1;
             while l < r {
