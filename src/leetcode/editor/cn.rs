@@ -1,3 +1,4 @@
+mod count_primes;
 mod remove_duplicates_from_sorted_list;
 mod reverse_linked_list;
 mod add_two_numbers;
