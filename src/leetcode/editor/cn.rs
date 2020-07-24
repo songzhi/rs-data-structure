@@ -1,3 +1,5 @@
+mod find_all_numbers_disappeared_in_an_array;
+mod find_minimum_in_rotated_sorted_array;
 mod add_two_numbers;
 mod add_two_numbers_ii;
 mod balanced_binary_tree;
