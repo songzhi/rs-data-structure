@@ -3,8 +3,9 @@
 // #![feature(alloc_layout_extra)]
 // #![feature(fmt_internals)]
 // #![feature(vec_remove_item)]
+#![allow(unused)]
 
-// pub mod algo;
+pub mod algo;
 // pub mod deque;
 // pub mod list;
 // pub mod utils;
