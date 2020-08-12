@@ -24,9 +24,8 @@ pub mod leetcode;
 // pub mod skiplist;
 // pub mod sync;
 
-fn test_it(f: impl Fn(&[u8], &mut Vec<u8>), input: &str, output: &str)
-{
-    let mut buf:Vec<u8> = vec![];
+fn test_it(f: impl Fn(&[u8], &mut Vec<u8>), input: &str, output: &str) {
+    let mut buf: Vec<u8> = vec![];
     f(input.as_bytes(), &mut buf);
-    assert_eq!(output.as_bytes(), buf.as_slice());
+    assert_eq!(output, unsafe { String::from_utf8_unchecked(buf) });
 }
