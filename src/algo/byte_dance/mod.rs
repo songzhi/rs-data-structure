@@ -1,3 +1,6 @@
+mod ab_exchange;
+mod user_likes;
+mod char_exchange;
 mod task_schedule;
 mod push_box;
 mod three_teams_tie;

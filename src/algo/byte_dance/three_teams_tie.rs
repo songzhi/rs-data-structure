@@ -1,44 +1,66 @@
-use std::cmp::max;
 use std::io::{BufRead, Write};
+use std::str::FromStr;
 
-fn solution(mut input: impl BufRead, mut output: impl Write) {
+#[inline]
+fn get_abc(i: usize, a: isize, d1: isize, d2: isize) -> (isize, isize) {
+    match i {
+        0 => (a + d1, a + d1 + d2),
+        1 => (a + d1, a + d1 - d2),
+        2 => (a - d1, a - d1 + d2),
+        3 => (a - d1, a - d1 - d2),
+        _ => unreachable!(),
+    }
+}
+
+fn could_tie(n: isize, k: isize, d1: isize, d2: isize) -> bool {
+    if n % 3 != 0 {
+        return false;
+    }
+    let x = [
+        k - 2 * d1 - d2,
+        k - 2 * d1 + d2,
+        k + 2 * d1 - d2,
+        k + 2 * d1 + d2,
+    ];
+    for i in 0..4 {
+        let mut sum = 0;
+        let mut t = x[i];
+        while t > 0 {
+            sum += t % 10;
+            t /= 10;
+        }
+        if sum % 3 == 0 && x[i] / 3 >= 0 && x[i] / 3 <= k && x[i] <= n {
+            let a = x[i] / 3;
+            let (b, c) = get_abc(i, a, d1, d2);
+            if b >= 0 && b <= k.min(n / 3) && c >= 0 && c <= k.min(n / 3) {
+                return true;
+            }
+        }
+    }
+    false
+}
+
+fn solve(mut input: impl BufRead, mut output: impl Write) {
     let mut buf = String::new();
     input.read_line(&mut buf);
-    let mut nums = buf.trim().split(' ').map(str::parse::<usize>).flatten();
-    let (n, m) = (nums.next().unwrap(), nums.next().unwrap());
-    buf.clear();
-    input.read_line(&mut buf);
-    let line = buf.trim().as_bytes();
-    let mut l = 0;
-    let mut r = 0;
-    let mut maxl = 0;
-    let mut an = 0;
-    let mut bn = 0;
-    while r < n {
-        if line[r] == b'a' {
-            an += 1;
+    let n = buf.trim().parse::<usize>().unwrap();
+    for _ in 0..n {
+        buf.clear();
+        input.read_line(&mut buf);
+        let mut nums = buf.trim().split(' ').map(isize::from_str).flatten();
+        if could_tie(
+            nums.next().unwrap(),
+            nums.next().unwrap(),
+            nums.next().unwrap(),
+            nums.next().unwrap(),
+        ) {
+            writeln!(output, "yes");
         } else {
-            bn += 1;
+            writeln!(output, "no");
         }
-        if an <= m || bn <= m {
-            r += 1;
-        } else {
-            maxl = maxl.max(r - l);
-            if line[l] == b'a' {
-                l += 1;
-                an -= 1;
-            } else {
-                l += 1;
-                bn -= 1;
-            }
-            r += 1;
-        }
-
     }
-    maxl = maxl.max(r-l);
-    writeln!(output, "{}", maxl);
 }
 
 fn main() {
-    solution(std::io::stdin().lock(), std::io::stdout());
+    solve(std::io::stdin().lock(), std::io::stdout());
 }

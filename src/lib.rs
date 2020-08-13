@@ -4,6 +4,7 @@
 // #![feature(fmt_internals)]
 // #![feature(vec_remove_item)]
 #![allow(unused)]
+#![allow(non_snake_case)]
 
 use std::io::{BufRead, Read, Write};
 
